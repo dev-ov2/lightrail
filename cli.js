@@ -284,7 +284,8 @@ export async function main() {
   console.log("Running with administrator privileges...");
 
   // Start server and schedule restart if needed
-  serverInstance._process = startServer(archetype, serverInstance);
+  startServer(archetype, serverInstance);
+  console.log("serverInstance", serverInstance);
   if (archetype.restartTime) {
     scheduleRestart(
       archetype,

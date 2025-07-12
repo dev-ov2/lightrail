@@ -2,7 +2,12 @@ import { setInterval } from "timers";
 import { startServer, killServer } from "./serverManager.js";
 import { execSync } from "child_process";
 
-export function scheduleRestart(archetype, serverInstance, restartTime, updateBeforeRestart) {
+export function scheduleRestart(
+  archetype,
+  serverInstance,
+  restartTime,
+  updateBeforeRestart
+) {
   function getNextRestartMs() {
     const now = new Date();
     const [h, m] = restartTime.split(":").map(Number);
@@ -14,22 +19,27 @@ export function scheduleRestart(archetype, serverInstance, restartTime, updateBe
 
   function restartFlow() {
     console.log("Restarting server...");
+    killServer(serverInstance);
     if (updateBeforeRestart) {
       try {
         const steamcmdArgs = [
-          "+force_install_dir", archetype.dir,
-          "+login", "anonymous",
-          "+app_update", archetype.appid,
+          "+force_install_dir",
+          archetype.dir,
+          "+login",
+          "anonymous",
+          "+app_update",
+          archetype.appid,
           "validate",
-          "+quit"
+          "+quit",
         ];
-        execSync(`"${archetype.steamcmd}" ${steamcmdArgs.join(" ")}`, { stdio: "inherit" });
+        execSync(`"${archetype.steamcmd}" ${steamcmdArgs.join(" ")}`, {
+          stdio: "inherit",
+        });
       } catch (err) {
         console.error("SteamCMD update failed:", err.message);
       }
     }
     // Kill and restart server
-    killServer(serverInstance);
     serverInstance._process = startServer(archetype, serverInstance);
     serverInstance._pid = serverInstance._process.pid;
   }
