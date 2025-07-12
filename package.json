@@ -1,6 +1,6 @@
 {
   "name": "@ov2/lightrail",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Node.js CLI tool for launching and managing ARK game servers with restart scheduling.",
   "main": "cli.js",
   "type": "module",
