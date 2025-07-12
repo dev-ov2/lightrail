@@ -6,6 +6,9 @@ import { scheduleRestart } from "./scheduler.js";
 import fs from "fs";
 import path from "path";
 import chalk from "chalk";
+const pkg = JSON.parse(
+  fs.readFileSync(new URL("./package.json", import.meta.url))
+);
 
 const SERVERS_FILE = path.join(process.cwd(), "servers.json");
 
@@ -111,6 +114,7 @@ export async function main() {
         `\n -----     -------     ----- ------      --`
     )
   );
+  console.log(chalk.cyanBright.bold(`Lightrail CLI v${pkg.version}`));
   console.log(
     chalk.cyanBright.bold(
       "═════════════════════════════════════════════════════════════════════════════════"
