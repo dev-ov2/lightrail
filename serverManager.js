@@ -31,10 +31,10 @@ function getAllChildPids(pid) {
   return all;
 }
 
-export function startServer(archetype, serverInstance) {
-  const dir = path.join(archetype.dir, serverInstance.worldName);
-  const clusterDir = archetype.clusterDir;
-  const mods = archetype.mods;
+export function startServer(profile, serverInstance) {
+  const dir = path.join(profile.dir, serverInstance.worldName);
+  const clusterDir = profile.clusterDir;
+  const mods = profile.mods;
   const symlinkPath = path.join(
     dir,
     "ShooterGame",
@@ -63,7 +63,7 @@ export function startServer(archetype, serverInstance) {
   }
 
   // Build command line
-  const commandLine = `${serverInstance.worldName}?listen?Port=${serverInstance.Port}?RCONEnabled=True?RCONPort=${serverInstance.RCONPort}?ServerAdminPassword=${archetype.adminPassword}`;
+  const commandLine = `${serverInstance.worldName}?listen?Port=${serverInstance.Port}?RCONEnabled=True?RCONPort=${serverInstance.RCONPort}?ServerAdminPassword=${profile.adminPassword}`;
   const serverExe = path.join(
     dir,
     "ShooterGame",
@@ -73,8 +73,8 @@ export function startServer(archetype, serverInstance) {
   );
   const args = [
     commandLine,
-    `-clusterID=${archetype.clusterID}`,
-    `-ClusterDirOverride=\"${archetype.clusterOverride || ""}\"`,
+    `-clusterID=${profile.clusterID}`,
+    `-ClusterDirOverride=\"${profile.clusterOverride || ""}\"`,
     "-NoTransferFromFiltering",
     "-PreventHibernation",
     "-ForceRespawnDinos",
