@@ -14,9 +14,9 @@ A Node.js CLI tool for launching ARK game servers with selectable configurations
    ```powershell
    npm install
    ```
-2. Run the CLI:
+2. Run the CLI with:
    ```powershell
-   node index.js
+   lightrail
    ```
 
 ## Customization
