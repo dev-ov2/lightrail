@@ -2,6 +2,8 @@ import { spawn, execSync } from "child_process";
 import path from "path";
 import fs from "fs";
 
+let currentServerProcess = null;
+
 export function startServer(archetype, serverInstance) {
   const dir = path.join(archetype.dir, serverInstance.worldName);
   const clusterDir = archetype.clusterDir;
@@ -58,5 +60,31 @@ export function startServer(archetype, serverInstance) {
 
   // Start server
   console.log("Starting Ark server...");
-  return spawn(serverExe, args, { stdio: "inherit", shell: true });
+  const proc = spawn(serverExe, args, { stdio: "inherit", shell: true });
+  currentServerProcess = proc;
+  serverInstance._process = proc;
+  serverInstance._pid = proc.pid;
+  return proc;
+}
+
+export function killServer(serverInstance) {
+  if (serverInstance && serverInstance._process && serverInstance._pid) {
+    try {
+      process.kill(serverInstance._pid);
+      console.log(`Killed server process (PID: ${serverInstance._pid})`);
+    } catch (err) {
+      console.error(`Failed to kill server process: ${err}`);
+    }
+    serverInstance._process = null;
+    serverInstance._pid = null;
+    currentServerProcess = null;
+  } else if (currentServerProcess) {
+    try {
+      process.kill(currentServerProcess.pid);
+      console.log(`Killed server process (PID: ${currentServerProcess.pid})`);
+    } catch (err) {
+      console.error(`Failed to kill server process: ${err}`);
+    }
+    currentServerProcess = null;
+  }
 }

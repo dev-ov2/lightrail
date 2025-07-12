@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 import inquirer from "inquirer";
 import { loadArchetypes, saveArchetypes } from "./archetype.js";
-import { startServer } from "./serverManager.js";
+import { startServer, killServer } from "./serverManager.js";
 import { scheduleRestart } from "./scheduler.js";
 import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 import isAdmin from "is-admin";
 import sudo from "sudo-prompt";
+import { spawn } from "child_process";
 const pkg = JSON.parse(
   fs.readFileSync(new URL("./package.json", import.meta.url))
 );

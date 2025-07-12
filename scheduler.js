@@ -1,5 +1,5 @@
 import { setInterval } from "timers";
-import { startServer } from "./serverManager.js";
+import { startServer, killServer } from "./serverManager.js";
 import { execSync } from "child_process";
 
 export function scheduleRestart(archetype, serverInstance, restartTime, updateBeforeRestart) {
@@ -29,10 +29,9 @@ export function scheduleRestart(archetype, serverInstance, restartTime, updateBe
       }
     }
     // Kill and restart server
-    if (serverInstance._process) {
-      serverInstance._process.kill();
-    }
+    killServer(serverInstance);
     serverInstance._process = startServer(archetype, serverInstance);
+    serverInstance._pid = serverInstance._process.pid;
   }
 
   setTimeout(() => {
