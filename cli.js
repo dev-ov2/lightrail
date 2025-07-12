@@ -402,10 +402,11 @@ export async function main() {
     console.clear();
     showLandingScreen();
     // Run SteamCMD update before starting server
+
     try {
       const steamcmdArgs = [
         "+force_install_dir",
-        profile.dir,
+        path.join(profile.dir, serverInstance.worldName),
         "+login",
         "anonymous",
         "+app_update",
