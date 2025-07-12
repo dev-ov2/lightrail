@@ -6,6 +6,7 @@ import { scheduleRestart } from "./scheduler.js";
 import fs from "fs";
 import path from "path";
 import chalk from "chalk";
+import isElevated from "is-elevated";
 const pkg = JSON.parse(
   fs.readFileSync(new URL("./package.json", import.meta.url))
 );
@@ -254,14 +255,7 @@ export async function main() {
   }
 
   // Check for admin rights (Windows only)
-  let isAdmin = false;
-  try {
-    execSync("net session", { stdio: "ignore" });
-    isAdmin = true;
-  } catch {
-    // Not admin
-  }
-  if (!isAdmin) {
+  if (!(await isElevated())) {
     console.error("Please run this script as administrator.");
     process.exit(1);
   }
