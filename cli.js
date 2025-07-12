@@ -88,7 +88,7 @@ async function promptForConfig(game, defaults = {}) {
 }
 
 async function promptForServerInstance() {
-  const answers = await safePrompt([
+  const answers = await inquirer.prompt([
     { type: "input", name: "worldName", message: "World Name:" },
     { type: "input", name: "Port", message: "Port:" },
     { type: "input", name: "RCONPort", message: "RCON Port:" },
