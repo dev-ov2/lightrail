@@ -7,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 import isAdmin from "is-admin";
+import sudo from "sudo-prompt";
 const pkg = JSON.parse(
   fs.readFileSync(new URL("./package.json", import.meta.url))
 );
@@ -256,8 +257,28 @@ export async function main() {
 
   // Check for admin rights (Windows only)
   if (!(await isAdmin())) {
-    console.error("Please run this script as administrator.");
-    process.exit(1);
+    console.log(
+      chalk.yellowBright(
+        "Administrator privileges required. Attempting to relaunch as administrator..."
+      )
+    );
+    const scriptPath = process.argv[1];
+    const args = process.argv.slice(2).join(" ");
+    sudo.exec(
+      `node "${scriptPath}" ${args}`,
+      { name: "Lightrail" },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(
+            chalk.redBright("Failed to restart as administrator:"),
+            error
+          );
+          process.exit(1);
+        }
+        process.exit(0);
+      }
+    );
+    return;
   }
   console.log("Running with administrator privileges...");
 
@@ -271,7 +292,9 @@ export async function main() {
       archetype.updateBeforeRestart
     );
     console.log(
-      `Restart scheduled for ${archetype.restartTime} (update: ${archetype.updateBeforeRestart ? "yes" : "no"})`
+      `Restart scheduled for ${archetype.restartTime} (update: ${
+        archetype.updateBeforeRestart ? "yes" : "no"
+      })`
     );
   }
 }
