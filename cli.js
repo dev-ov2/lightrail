@@ -8,7 +8,7 @@ import path from "path";
 import chalk from "chalk";
 import isAdmin from "is-admin";
 import sudo from "sudo-prompt";
-import { spawn } from "child_process";
+import { spawn, execSync } from "child_process";
 const pkg = JSON.parse(
   fs.readFileSync(new URL("./package.json", import.meta.url))
 );
@@ -95,6 +95,12 @@ async function promptForServerInstance() {
     { type: "input", name: "worldName", message: "World Name:" },
     { type: "input", name: "Port", message: "Port:" },
     { type: "input", name: "RCONPort", message: "RCON Port:" },
+    {
+      type: "confirm",
+      name: "updateNow",
+      message: "Update server right now?",
+      default: false,
+    },
   ]);
   return answers;
 }
@@ -245,6 +251,16 @@ export async function main() {
     return main();
   } else {
     serverInstance = archetypeServers.servers[serverIdx];
+    // Prompt for update after selection
+    const { updateNow } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "updateNow",
+        message: "Update server right now?",
+        default: false,
+      },
+    ]);
+    serverInstance.updateNow = updateNow;
   }
 
   if (
@@ -282,6 +298,29 @@ export async function main() {
     return;
   }
   console.log("Running with administrator privileges...");
+
+  // Update server with SteamCMD if selected
+  if (serverInstance.updateNow) {
+    // Run SteamCMD update before starting server
+    try {
+      const steamcmdArgs = [
+        "+force_install_dir",
+        archetype.dir,
+        "+login",
+        "anonymous",
+        "+app_update",
+        archetype.appid,
+        "validate",
+        "+quit",
+      ];
+      console.log("Updating server with SteamCMD...");
+      execSync(`"${archetype.steamcmd}" ${steamcmdArgs.join(" ")}`, {
+        stdio: "inherit",
+      });
+    } catch (err) {
+      console.error("SteamCMD update failed:", err.message);
+    }
+  }
 
   // Start server and schedule restart if needed
   startServer(archetype, serverInstance);

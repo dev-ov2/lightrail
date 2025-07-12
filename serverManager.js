@@ -3,6 +3,33 @@ import path from "path";
 import fs from "fs";
 
 let currentServerProcess = null;
+let childProcesses = [];
+
+function getChildPids(parentPid) {
+  if (process.platform !== "win32") return [];
+  try {
+    const stdout = execSync(
+      `wmic process where (ParentProcessId=${parentPid}) get ProcessId`,
+      { encoding: "utf8" }
+    );
+    return stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => /^\d+$/.test(line))
+      .map(Number);
+  } catch {
+    return [];
+  }
+}
+
+function getAllChildPids(pid) {
+  const directChildren = getChildPids(pid);
+  let all = [...directChildren];
+  for (const child of directChildren) {
+    all = all.concat(getAllChildPids(child));
+  }
+  return all;
+}
 
 export function startServer(archetype, serverInstance) {
   const dir = path.join(archetype.dir, serverInstance.worldName);
@@ -25,22 +52,6 @@ export function startServer(archetype, serverInstance) {
     }
   } catch (err) {
     console.warn("Could not delete symlink:", err.message);
-  }
-
-  // Run SteamCMD
-  try {
-    // const steamcmdArgs = [
-    //   "+force_install_dir", dir,
-    //   "+login", "anonymous",
-    //   "+app_update", archetype.appid,
-    //   "validate",
-    //   "+quit"
-    // ];
-    // console.log("Authenticating with Steam...");
-    // execSync(`"${archetype.steamcmd}" ${steamcmdArgs.join(" ")}`, { stdio: "inherit" });
-  } catch (err) {
-    console.error("SteamCMD failed:", err.message);
-    process.exit(1);
   }
 
   // Create symlink
@@ -76,27 +87,47 @@ export function startServer(archetype, serverInstance) {
   currentServerProcess = proc;
   serverInstance._process = proc;
   serverInstance._pid = proc.pid;
+  // Fetch and save all child PIDs
+  serverInstance._childPids = getAllChildPids(proc.pid);
+  console.log("childPids", serverInstance._childPids);
+  childProcesses.push(proc);
   return proc;
 }
 
-export function killServer(serverInstance) {
-  if (serverInstance && serverInstance._process && serverInstance._pid) {
+function killProcessTree(pid) {
+  if (process.platform === "win32") {
+    // Use taskkill to kill process tree
     try {
-      process.kill(serverInstance._pid);
-      console.log(`Killed server process (PID: ${serverInstance._pid})`);
+      execSync(`taskkill /PID ${pid} /T /F`);
+      console.log(`Killed process tree (PID: ${pid})`);
     } catch (err) {
-      console.error(`Failed to kill server process: ${err}`);
+      console.error(`Failed to kill process tree: ${err}`);
     }
+  } else {
+    // On Unix, kill process group
+    try {
+      process.kill(-pid);
+      console.log(`Killed process group (PID: ${pid})`);
+    } catch (err) {
+      console.error(`Failed to kill process group: ${err}`);
+    }
+  }
+}
+
+export function killServer(serverInstance) {
+  // Kill all child processes of the server process
+  if (serverInstance && Array.isArray(serverInstance._childPids)) {
+    for (const pid of serverInstance._childPids) {
+      killProcessTree(pid);
+    }
+  }
+  // Kill main server process
+  if (serverInstance && serverInstance._process && serverInstance._pid) {
+    killProcessTree(serverInstance._pid);
     serverInstance._process = null;
     serverInstance._pid = null;
-    currentServerProcess = null;
-  } else if (currentServerProcess) {
-    try {
-      process.kill(currentServerProcess.pid);
-      console.log(`Killed server process (PID: ${currentServerProcess.pid})`);
-    } catch (err) {
-      console.error(`Failed to kill server process: ${err}`);
-    }
-    currentServerProcess = null;
+    serverInstance._childPids = [];
   }
+  childProcesses = [];
+  currentServerProcess = null;
 }
