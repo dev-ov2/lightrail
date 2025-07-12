@@ -5,6 +5,7 @@ import { startServer } from "./serverManager.js";
 import { scheduleRestart } from "./scheduler.js";
 import fs from "fs";
 import path from "path";
+import chalk from "chalk";
 
 const SERVERS_FILE = path.join(process.cwd(), "servers.json");
 
@@ -23,44 +24,157 @@ function saveServers(servers) {
 
 async function promptForConfig(game, defaults = {}) {
   const answers = await inquirer.prompt([
-    { type: "input", name: "name", message: "Configuration name:", default: defaults.name || "Lightrail Server" },
-    { type: "input", name: "dir", message: "Server install directory:", default: defaults.dir || "C:/lightrail/ark" },
-    { type: "input", name: "clusterDir", message: "Cluster directory (optional):", default: defaults.clusterDir || "" },
-    { type: "input", name: "mods", message: "Mods (optional, ex: '21854,22852'):", default: defaults.mods || "" },
-    { type: "input", name: "steamcmd", message: "SteamCMD executable path:", default: defaults.steamcmd || "C:/steamcmd/steamcmd.exe" },
-    { type: "input", name: "adminPassword", message: "Server admin password:", default: defaults.adminPassword || "lightrail" },
-    { type: "input", name: "clusterID", message: "Cluster ID (default 'lightrail'):", default: defaults.clusterID || "lightrail" },
-    { type: "input", name: "restartTime", message: "Restart time (HH:mm, optional):", default: defaults.restartTime || "" },
-    { type: "confirm", name: "updateBeforeRestart", message: "Update server before restart?", default: defaults.updateBeforeRestart ?? true }
+    {
+      type: "input",
+      name: "name",
+      message: "Configuration name:",
+      default: defaults.name || "Lightrail Server",
+    },
+    {
+      type: "input",
+      name: "dir",
+      message: "Server install directory:",
+      default: defaults.dir || "C:/lightrail/ark",
+    },
+    {
+      type: "input",
+      name: "clusterDir",
+      message: "Cluster directory (optional):",
+      default: defaults.clusterDir || "",
+    },
+    {
+      type: "input",
+      name: "mods",
+      message: "Mods (optional, ex: '21854,22852'):",
+      default: defaults.mods || "",
+    },
+    {
+      type: "input",
+      name: "steamcmd",
+      message: "SteamCMD executable path:",
+      default: defaults.steamcmd || "C:/steamcmd/steamcmd.exe",
+    },
+    {
+      type: "input",
+      name: "adminPassword",
+      message: "Server admin password:",
+      default: defaults.adminPassword || "lightrail",
+    },
+    {
+      type: "input",
+      name: "clusterID",
+      message: "Cluster ID (default 'lightrail'):",
+      default: defaults.clusterID || "lightrail",
+    },
+    {
+      type: "input",
+      name: "restartTime",
+      message: "Restart time (HH:mm, optional):",
+      default: defaults.restartTime || "",
+    },
+    {
+      type: "confirm",
+      name: "updateBeforeRestart",
+      message: "Update server before restart?",
+      default: defaults.updateBeforeRestart ?? true,
+    },
   ]);
+  if (!answers) return null;
   if (game === "Ark: Survival Ascended") answers.appid = "2430930";
   return answers;
 }
 
 async function promptForServerInstance() {
-  return await inquirer.prompt([
+  const answers = await safePrompt([
     { type: "input", name: "worldName", message: "World Name:" },
     { type: "input", name: "Port", message: "Port:" },
     { type: "input", name: "RCONPort", message: "RCON Port:" },
   ]);
+  return answers;
 }
 
 export async function main() {
+  // Flashy landing page
+  console.clear();
+  console.log(
+    chalk.bold(
+      `\n ----- ---   ----   ---- ----     ----      -` +
+        `\n     ---- ---     ------- ---- ---    ----- --` +
+        `\n -----     -------     ----- ------      --` +
+        `\n    / /(_) __ _| |__ | |_ _ __ __ _(_) |` +
+        `\n   / / | |/ _\` | '_ \\| __| \'__/ _\` | | |` +
+        `\n  / /__| | (_| | | | | |_| | | (_| | | |` +
+        `\n  \\____/_|\\_,  |_| |_|\\__|_|  \\__,_|_|_|` +
+        `\n          |___/                         ` +
+        `\n ----- ---   ----   ---- ----     ----      -` +
+        `\n     ---- ---     ------- ---- ---    ----- --` +
+        `\n -----     -------     ----- ------      --`
+    )
+  );
+  console.log(
+    chalk.cyanBright.bold(
+      "═════════════════════════════════════════════════════════════════════════════════"
+    )
+  );
+  console.log(
+    chalk.yellowBright.bold(
+      "Welcome to " +
+        chalk.magentaBright.bold("Lightrail") +
+        " - A Server Manager CLI tool!"
+    )
+  );
+  console.log(
+    chalk.greenBright.bold(
+      "\n" + " Something something CLI is best something... " + "\n"
+    )
+  );
+  console.log(
+    chalk.cyanBright(
+      "───────────────────────────────────────────────────────────────────────────────"
+    )
+  );
+  console.log(
+    chalk.whiteBright(
+      chalk.bold("Tip:") +
+        " Use arrow keys to navigate, and Ctrl+C to exit at any time."
+    )
+  );
+  console.log(
+    chalk.cyanBright(
+      "───────────────────────────────────────────────────────────────────────────────\n"
+    )
+  );
+
   const games = ["Ark: Survival Ascended"];
   const { game } = await inquirer.prompt([
-    { type: "list", name: "game", message: "Select game:", choices: games, default: games[0] },
+    {
+      type: "list",
+      name: "game",
+      message: "Select game:",
+      choices: games,
+      default: games[0],
+    },
   ]);
 
   let archetypes = loadArchetypes();
-  let archetypeChoices = archetypes.map((cfg, idx) => ({ name: cfg.name, value: idx }));
+  let archetypeChoices = archetypes.map((cfg, idx) => ({
+    name: cfg.name,
+    value: idx,
+  }));
   archetypeChoices.push({ name: "Create new server type", value: "new" });
   const { archetypeIdx } = await inquirer.prompt([
-    { type: "list", name: "archetypeIdx", message: "Select server type (archetype):", choices: archetypeChoices },
+    {
+      type: "list",
+      name: "archetypeIdx",
+      message: "Select server type (archetype):",
+      choices: archetypeChoices,
+    },
   ]);
 
   let archetype;
   if (archetypeIdx === "new") {
     archetype = await promptForConfig(game);
+    if (!archetype) return;
     archetypes.push(archetype);
     saveArchetypes(archetypes);
     console.log("New server type saved.");
@@ -74,30 +188,49 @@ export async function main() {
 
   let serversData = loadServers();
   if (!serversData[game]) serversData[game] = [];
-  let archetypeServers = serversData[game].find(s => s.archetype === archetype.name);
+  let archetypeServers = serversData[game].find(
+    (s) => s.archetype === archetype.name
+  );
   if (!archetypeServers) {
     archetypeServers = { archetype: archetype.name, servers: [] };
     serversData[game].push(archetypeServers);
   }
-  let serverChoices = archetypeServers.servers.map((srv, idx) => ({ name: `${srv.worldName} (Port: ${srv.Port}, RCON: ${srv.RCONPort})`, value: idx }));
+  let serverChoices = archetypeServers.servers.map((srv, idx) => ({
+    name: `${srv.worldName} (Port: ${srv.Port}, RCON: ${srv.RCONPort})`,
+    value: idx,
+  }));
   serverChoices.push(new inquirer.Separator());
   serverChoices.push({ name: "Create new server instance", value: "new" });
   serverChoices.push(new inquirer.Separator());
-  serverChoices.push({ name: `Update archetype (${archetype.name})`, value: "update_archetype" });
+  serverChoices.push({
+    name: `Update archetype (${archetype.name})`,
+    value: "update_archetype",
+  });
   const { serverIdx } = await inquirer.prompt([
-    { type: "list", name: "serverIdx", message: `Select server instance for archetype '${archetype.name}':`, choices: serverChoices, pageSize: 10 },
+    {
+      type: "list",
+      name: "serverIdx",
+      message: `Select server instance for archetype '${archetype.name}':`,
+      choices: serverChoices,
+      pageSize: 10,
+    },
   ]);
 
   let serverInstance;
   if (serverIdx === "new") {
-    console.log("\n------------------------------\nCreating new server instance\n------------------------------");
+    console.log(
+      "\n------------------------------\nCreating new server instance\n------------------------------"
+    );
     serverInstance = await promptForServerInstance();
     archetypeServers.servers.push(serverInstance);
     saveServers(serversData);
     console.log("New server instance saved.");
   } else if (serverIdx === "update_archetype") {
-    console.log("\n------------------------------\nUpdating archetype\n------------------------------");
+    console.log(
+      "\n------------------------------\nUpdating archetype\n------------------------------"
+    );
     const updated = await promptForConfig(game, archetype);
+    if (!updated) return;
     if (game === "Ark: Survival Ascended") updated.appid = "2430930";
     archetypes[archetypeIdx] = updated;
     saveArchetypes(archetypes);
@@ -107,7 +240,11 @@ export async function main() {
     serverInstance = archetypeServers.servers[serverIdx];
   }
 
-  if (!serverInstance.worldName || !serverInstance.Port || !serverInstance.RCONPort) {
+  if (
+    !serverInstance.worldName ||
+    !serverInstance.Port ||
+    !serverInstance.RCONPort
+  ) {
     console.error("ERROR: You must provide all three arguments!");
     process.exit(1);
   }
@@ -129,11 +266,24 @@ export async function main() {
   // Start server and schedule restart if needed
   serverInstance._process = startServer(archetype, serverInstance);
   if (archetype.restartTime) {
-    scheduleRestart(archetype, serverInstance, archetype.restartTime, archetype.updateBeforeRestart);
-    console.log(`Restart scheduled for ${archetype.restartTime} (update: ${archetype.updateBeforeRestart ? "yes" : "no"})`);
+    scheduleRestart(
+      archetype,
+      serverInstance,
+      archetype.restartTime,
+      archetype.updateBeforeRestart
+    );
+    console.log(
+      `Restart scheduled for ${archetype.restartTime} (update: ${archetype.updateBeforeRestart ? "yes" : "no"})`
+    );
   }
 }
 
-if (process.argv[1] === import.meta.url) {
-  main();
+try {
+  await main();
+} catch (err) {
+  if (err && err.name === "ExitPromptError") {
+    console.log("\nPrompt cancelled by user (Ctrl+C). Exiting...");
+    process.exit(0);
+  }
+  throw err;
 }
