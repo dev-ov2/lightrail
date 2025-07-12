@@ -1,0 +1,16 @@
+# Node modules
+node_modules/
+
+# Local server configs
+servers.json
+server-configs.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
