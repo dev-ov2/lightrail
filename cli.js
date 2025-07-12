@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import inquirer from "inquirer";
-import { loadArchetypes, saveArchetypes } from "./archetype.js";
 import { startServer, killServer } from "./serverManager.js";
 import { scheduleRestart } from "./scheduler.js";
 import fs from "fs";
@@ -13,7 +12,16 @@ const pkg = JSON.parse(
   fs.readFileSync(new URL("./package.json", import.meta.url))
 );
 
-const SERVERS_FILE = path.join(process.cwd(), "servers.json");
+const CONFIG_DIR = path.join(
+  process.env.USERPROFILE || process.env.HOME,
+  "Documents",
+  "lightrail"
+);
+if (!fs.existsSync(CONFIG_DIR)) {
+  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+}
+const SERVERS_FILE = path.join(CONFIG_DIR, "servers.json");
+const ARCHETYPES_FILE = path.join(CONFIG_DIR, "server-configs.json");
 
 function loadServers() {
   if (!fs.existsSync(SERVERS_FILE)) return {};
@@ -26,6 +34,22 @@ function loadServers() {
 
 function saveServers(servers) {
   fs.writeFileSync(SERVERS_FILE, JSON.stringify(servers, null, 2));
+}
+
+import {
+  loadArchetypes as _loadArchetypes,
+  saveArchetypes as _saveArchetypes,
+} from "./archetype.js";
+function loadArchetypes() {
+  if (!fs.existsSync(ARCHETYPES_FILE)) return [];
+  try {
+    return JSON.parse(fs.readFileSync(ARCHETYPES_FILE, "utf8"));
+  } catch {
+    return [];
+  }
+}
+function saveArchetypes(archetypes) {
+  fs.writeFileSync(ARCHETYPES_FILE, JSON.stringify(archetypes, null, 2));
 }
 
 async function promptForConfig(game, defaults = {}) {
