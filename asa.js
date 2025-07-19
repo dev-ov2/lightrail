@@ -65,7 +65,10 @@ function startASAServer(profile, serverInstance) {
   if (serverInstance.RCONPort) {
     commandLine += `?RCONEnabled=True?RCONPort=${serverInstance.RCONPort}`;
   }
-  commandLine += `?ServerAdminPassword=${profile.adminPassword}`;
+  // Use adminPassword from serverInstance if present, else fallback to profile
+  commandLine += `?ServerAdminPassword=${
+    serverInstance.adminPassword || profile.adminPassword
+  }`;
   const serverExe = path.join(
     dir,
     "ShooterGame",
@@ -105,6 +108,15 @@ function startASAServer(profile, serverInstance) {
       } else {
         args.push(param);
       }
+    }
+  }
+  // Add -mods from profile if not already present in launchParams
+  if (profile.mods && typeof profile.mods === "string" && profile.mods.trim()) {
+    const modsParamPresent = Array.isArray(serverInstance.launchParams)
+      ? serverInstance.launchParams.some((p) => p.startsWith("-mods"))
+      : false;
+    if (!modsParamPresent) {
+      args.push(`-mods=${profile.mods.trim()}`);
     }
   }
 
