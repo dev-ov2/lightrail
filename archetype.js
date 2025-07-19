@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+const fs = require("fs");
+const path = require("path");
 
 const CONFIG_DIR = path.join(
   process.env.USERPROFILE || process.env.HOME,
@@ -11,7 +11,7 @@ if (!fs.existsSync(CONFIG_DIR)) {
 }
 const CONFIG_FILE = path.join(CONFIG_DIR, "server-profiles.json");
 
-export function loadProfiles() {
+function loadProfiles() {
   if (!fs.existsSync(CONFIG_FILE)) return [];
   try {
     return JSON.parse(fs.readFileSync(CONFIG_FILE, "utf8"));
@@ -20,6 +20,7 @@ export function loadProfiles() {
   }
 }
 
-export function saveProfiles(profiles) {
+function saveProfiles(profiles) {
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(profiles, null, 2));
 }
+module.exports = { loadProfiles, saveProfiles };

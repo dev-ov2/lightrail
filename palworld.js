@@ -1,8 +1,8 @@
-import inquirer from "inquirer";
-import { spawn } from "child_process";
-import path from "path";
+const inquirer = require("inquirer");
+const { spawn } = require("child_process");
+const path = require("path");
 
-export async function promptForPalworldConfig(defaults = {}) {
+async function promptForPalworldConfig(defaults = {}) {
   const answers = await inquirer.prompt([
     {
       type: "input",
@@ -70,7 +70,7 @@ export async function promptForPalworldConfig(defaults = {}) {
   return answers;
 }
 
-export async function promptForPalworldServerInstance(defaults = {}) {
+async function promptForPalworldServerInstance(defaults = {}) {
   const launchParams = [
     {
       name: "-port=<port>",
@@ -228,7 +228,7 @@ export async function promptForPalworldServerInstance(defaults = {}) {
   return answers;
 }
 
-export function startPalworldServer(profile, serverInstance) {
+function startPalworldServer(profile, serverInstance) {
   // Use installDir and executable for launch
   const serverExe = path.join(profile.dir, serverInstance.id, "PalServer.exe");
   // Build args from selected launchParams and their values
@@ -267,7 +267,7 @@ export function startPalworldServer(profile, serverInstance) {
   return proc;
 }
 
-export function killPalworldServer(serverInstance) {
+function killPalworldServer(serverInstance) {
   // Kill the process if running
   if (
     serverInstance &&
@@ -284,3 +284,9 @@ export function killPalworldServer(serverInstance) {
     console.log("No active Palworld server process found.");
   }
 }
+module.exports = {
+  promptForPalworldConfig,
+  promptForPalworldServerInstance,
+  startPalworldServer,
+  killPalworldServer,
+};

@@ -1,33 +1,31 @@
 #!/usr/bin/env node
-import inquirer from "inquirer";
-import { startServer, killServer } from "./serverManager.js";
-import { scheduleRestart } from "./scheduler.js";
-import fs from "fs";
-import path from "path";
-import chalk from "chalk";
-import isAdmin from "is-admin";
-import sudo from "sudo-prompt";
-import { loadProfiles, saveProfiles } from "./archetype.js";
-import { promptForASAConfig, promptForASAServerInstance } from "./asa.js";
-import {
+const inquirer = require("inquirer");
+const { startServer, killServer } = require("./serverManager.js");
+const { scheduleRestart } = require("./scheduler.js");
+const fs = require("fs");
+const path = require("path");
+const chalk = require("chalk");
+const sudo = require("sudo-prompt");
+const { loadProfiles, saveProfiles } = require("./archetype.js");
+const { promptForASAConfig, promptForASAServerInstance } = require("./asa.js");
+const {
   promptForSoulmaskConfig,
   promptForSoulmaskServerInstance,
   startSoulmaskServer,
   killSoulmaskServer,
-} from "./soulmask.js";
-import {
+} = require("./soulmask.js");
+const {
   promptForPalworldConfig,
   promptForPalworldServerInstance,
   startPalworldServer,
   killPalworldServer,
-} from "./palworld.js";
-import { spawn, execSync } from "child_process";
-
+} = require("./palworld.js");
+const { spawn, execSync } = require("child_process");
+// For pkg compatibility, use process.cwd() as __dirname
+// const __dirname = process.cwd();
 const lightrail = chalk.rgb(96, 255, 255).bold("Lightrail");
 
-const pkg = JSON.parse(
-  fs.readFileSync(new URL("./package.json", import.meta.url))
-);
+const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "package.json")));
 
 const CONFIG_DIR = path.join(
   process.env.USERPROFILE || process.env.HOME,
@@ -191,7 +189,7 @@ function withScreen(title, fn) {
   return fn();
 }
 
-export async function main() {
+async function main() {
   await withScreen("Landing", async () => {});
 
   const games = ["Ark: Survival Ascended", "Soulmask", "Palworld"].sort();
@@ -381,38 +379,38 @@ export async function main() {
     serverInstance.updateNow = updateNow;
   }
 
-  await withScreen("Admin Check", async () => {});
-  if (!(await isAdmin())) {
-    await withScreen("Requesting Admin", async () => {
-      console.log(
-        chalk.yellowBright(
-          "Administrator privileges required. Attempting to relaunch as administrator..."
-        )
-      );
-    });
-    const scriptPath = process.argv[1];
-    const args = process.argv.slice(2).join(" ");
-    sudo.exec(
-      `node "${scriptPath}" ${args}`,
-      { name: "Lightrail" },
-      (error, stdout, stderr) => {
-        if (error) {
-          withScreen("Admin Relaunch Failed", async () => {
-            console.error(
-              chalk.redBright("Failed to restart as administrator:"),
-              error
-            );
-          });
-          process.exit(1);
-        }
-        process.exit(0);
-      }
-    );
-    return;
-  }
-  await withScreen("Running as Admin", async () => {
-    console.log("Running with administrator privileges...");
-  });
+  // await withScreen("Admin Check", async () => {});
+  // if (!(await isAdmin())) {
+  //   await withScreen("Requesting Admin", async () => {
+  //     console.log(
+  //       chalk.yellowBright(
+  //         "Administrator privileges required. Attempting to relaunch as administrator..."
+  //       )
+  //     );
+  //   });
+  //   const scriptPath = process.argv[1];
+  //   const args = process.argv.slice(2).join(" ");
+  //   sudo.exec(
+  //     `node "${scriptPath}" ${args}`,
+  //     { name: "Lightrail" },
+  //     (error, stdout, stderr) => {
+  //       if (error) {
+  //         withScreen("Admin Relaunch Failed", async () => {
+  //           console.error(
+  //             chalk.redBright("Failed to restart as administrator:"),
+  //             error
+  //           );
+  //         });
+  //         process.exit(1);
+  //       }
+  //       process.exit(0);
+  //     }
+  //   );
+  //   return;
+  // }
+  // await withScreen("Running as Admin", async () => {
+  //   console.log("Running with administrator privileges...");
+  // });
 
   // Ensure server directory exists before update
   let serverDir =
@@ -509,8 +507,8 @@ export async function main() {
     }
     staticLines.forEach((line) => console.log(line));
 
-    const readline = await import("readline");
-    // Uptime line index
+const readline = require("readline"); 
+   // Uptime line index
     const uptimeLineIdx = staticLines.length;
     // Print uptime line
     const printUptime = () => {
@@ -538,15 +536,15 @@ export async function main() {
 
     function updateUptime() {
       // Move cursor to uptime line
-      readline.default.moveCursor(
+      readline.moveCursor(
         process.stdout,
         0,
         -(totalLines - uptimeLineIdx)
       );
-      readline.default.clearLine(process.stdout, 0);
+      readline.clearLine(process.stdout, 0);
       process.stdout.write(printUptime() + "\n");
       // Move cursor back to end
-      readline.default.moveCursor(
+      readline.moveCursor(
         process.stdout,
         0,
         totalLines - uptimeLineIdx - 1

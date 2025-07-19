@@ -1,5 +1,5 @@
 // Returns display name for Soulmask server instance
-export function getSoulmaskInstanceDisplayName(instance, idx) {
+function getSoulmaskInstanceDisplayName(instance, idx) {
   if (instance.serverName && instance.serverName.trim()) {
     return instance.serverName;
   }
@@ -8,13 +8,13 @@ export function getSoulmaskInstanceDisplayName(instance, idx) {
   }
   return `Instance ${idx + 1}`;
 }
-import inquirer from "inquirer";
-import { spawn, execSync } from "child_process";
-import path from "path";
-import fs from "fs";
-import net from "net";
+const inquirer = require("inquirer");
+const { spawn, execSync } = require("child_process");
+const path = require("path");
+const fs = require("fs");
+const net = require("net");
 
-export async function promptForSoulmaskConfig(defaults = {}) {
+async function promptForSoulmaskConfig(defaults = {}) {
   const answers = await inquirer.prompt([
     {
       type: "input",
@@ -57,7 +57,7 @@ export async function promptForSoulmaskConfig(defaults = {}) {
   return answers;
 }
 
-export async function promptForSoulmaskServerInstance(defaults = {}) {
+async function promptForSoulmaskServerInstance(defaults = {}) {
   const coreParams = [
     {
       name: "-server",
@@ -234,7 +234,7 @@ export async function promptForSoulmaskServerInstance(defaults = {}) {
   return answers;
 }
 
-export function startSoulmaskServer(profile, serverInstance) {
+function startSoulmaskServer(profile, serverInstance) {
   // Use installDir and executable for launch
   const serverExe = path.join(profile.dir, serverInstance.id, "WSServer.exe");
   const args = ["Level01_Main"];
@@ -293,7 +293,7 @@ export function startSoulmaskServer(profile, serverInstance) {
   return proc;
 }
 
-export function killSoulmaskServer(profile) {
+function killSoulmaskServer(profile) {
   // Use telnet to send 'quit 30' to EchoPort
   const client = net.createConnection(
     { port: profile["-EchoPort=<echoPort>"] || 18888 },
@@ -306,3 +306,11 @@ export function killSoulmaskServer(profile) {
     console.error("Failed to send quit command via telnet:", err.message);
   });
 }
+
+module.exports = {
+  promptForSoulmaskConfig,
+  promptForSoulmaskServerInstance,
+  startSoulmaskServer,
+  killSoulmaskServer,
+  getSoulmaskInstanceDisplayName,
+};

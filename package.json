@@ -1,9 +1,9 @@
 {
   "name": "@ov2/lightrail",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "description": "Node.js CLI tool for launching and managing ARK game servers with restart scheduling.",
   "main": "cli.js",
-  "type": "module",
+  "type": "commonjs",
   "bin": {
     "lightrail": "cli.js"
   },
@@ -24,10 +24,13 @@
   "author": "Dev OV2",
   "license": "MIT",
   "dependencies": {
-    "chalk": "^5.4.1",
+    "chalk": "^4.1.2",
     "commander": "^14.0.0",
-    "inquirer": "^12.7.0",
+    "inquirer": "^8.2.4",
     "is-admin": "^4.0.0",
     "sudo-prompt": "^9.2.1"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
   }
 }

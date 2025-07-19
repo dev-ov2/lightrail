@@ -1,7 +1,7 @@
-import { spawn, execSync } from "child_process";
-import path from "path";
-import fs from "fs";
-import inquirer from "inquirer";
+const { spawn, execSync } = require("child_process");
+const path = require("path");
+const fs = require("fs");
+const inquirer = require("inquirer");
 
 function getChildPids(parentPid) {
   if (process.platform !== "win32") return [];
@@ -29,7 +29,7 @@ function getAllChildPids(pid) {
   return all;
 }
 
-export function startASAServer(profile, serverInstance) {
+function startASAServer(profile, serverInstance) {
   const dir = path.join(profile.dir, serverInstance.worldName);
   const clusterDir = profile.clusterDir;
   const mods = profile.mods;
@@ -119,7 +119,7 @@ export function startASAServer(profile, serverInstance) {
   return proc;
 }
 
-export function killASAProcessTree(pid) {
+function killASAProcessTree(pid) {
   if (process.platform === "win32") {
     try {
       execSync(`taskkill /PID ${pid} /T /F`);
@@ -137,7 +137,7 @@ export function killASAProcessTree(pid) {
   }
 }
 
-export function killASAServer(serverInstance) {
+function killASAServer(serverInstance) {
   if (serverInstance && Array.isArray(serverInstance._childPids)) {
     for (const pid of serverInstance._childPids) {
       killASAProcessTree(pid);
@@ -151,7 +151,7 @@ export function killASAServer(serverInstance) {
   }
 }
 
-export async function promptForASAConfig(defaults = {}) {
+async function promptForASAConfig(defaults = {}) {
   const answers = await inquirer.prompt([
     {
       type: "input",
@@ -213,7 +213,7 @@ export async function promptForASAConfig(defaults = {}) {
   return answers;
 }
 
-export async function promptForASAServerInstance(defaults = {}) {
+async function promptForASAServerInstance(defaults = {}) {
   const coreParams = [
     {
       name: "?listen",
@@ -582,3 +582,10 @@ export async function promptForASAServerInstance(defaults = {}) {
   answers.launchParamValues = paramValues;
   return answers;
 }
+module.exports = {
+  startASAServer,
+  killASAProcessTree,
+  killASAServer,
+  promptForASAConfig,
+  promptForASAServerInstance,
+};
