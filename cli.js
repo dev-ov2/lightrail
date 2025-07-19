@@ -7,7 +7,24 @@ import path from "path";
 import chalk from "chalk";
 import isAdmin from "is-admin";
 import sudo from "sudo-prompt";
+import { loadProfiles, saveProfiles } from "./archetype.js";
+import { promptForASAConfig, promptForASAServerInstance } from "./asa.js";
+import {
+  promptForSoulmaskConfig,
+  promptForSoulmaskServerInstance,
+  startSoulmaskServer,
+  killSoulmaskServer,
+} from "./soulmask.js";
+import {
+  promptForPalworldConfig,
+  promptForPalworldServerInstance,
+  startPalworldServer,
+  killPalworldServer,
+} from "./palworld.js";
 import { spawn, execSync } from "child_process";
+
+const lightrail = chalk.rgb(96, 255, 255).bold("Lightrail");
+
 const pkg = JSON.parse(
   fs.readFileSync(new URL("./package.json", import.meta.url))
 );
@@ -36,104 +53,33 @@ function saveServers(servers) {
   fs.writeFileSync(SERVERS_FILE, JSON.stringify(servers, null, 2));
 }
 
-import { loadProfiles, saveProfiles } from "./archetype.js";
-
-async function promptForConfig(game, defaults = {}) {
-  const answers = await inquirer.prompt([
-    {
-      type: "input",
-      name: "name",
-      message: "Profile name:",
-      default: defaults.name || "Lightrail Server",
-    },
-    {
-      type: "input",
-      name: "dir",
-      message: "Server install directory:",
-      default: defaults.dir || "C:/lightrail/ark",
-    },
-    {
-      type: "input",
-      name: "clusterDir",
-      message: "Cluster directory (optional):",
-      default: defaults.clusterDir || "",
-    },
-    {
-      type: "input",
-      name: "mods",
-      message: "Mods (optional, ex: '21854,22852'):",
-      default: defaults.mods || "",
-    },
-    {
-      type: "input",
-      name: "steamcmd",
-      message: "SteamCMD executable path:",
-      default: defaults.steamcmd || "C:/steamcmd/steamcmd.exe",
-    },
-    {
-      type: "input",
-      name: "adminPassword",
-      message: "Server admin password:",
-      default: defaults.adminPassword || "lightrail",
-    },
-    {
-      type: "input",
-      name: "clusterID",
-      message: "Cluster ID (default 'lightrail'):",
-      default: defaults.clusterID || "lightrail",
-    },
-    {
-      type: "input",
-      name: "restartTime",
-      message: "Restart time (HH:mm, optional):",
-      default: defaults.restartTime || "",
-    },
-    {
-      type: "confirm",
-      name: "updateBeforeRestart",
-      message: "Update server before restart?",
-      default: defaults.updateBeforeRestart ?? true,
-    },
-  ]);
-  if (!answers) return null;
-  if (game === "Ark: Survival Ascended") answers.appid = "2430930";
-  return answers;
-}
-
-async function promptForServerInstance() {
-  const answers = await inquirer.prompt([
-    { type: "input", name: "serverName", message: "Server Name:" },
-    { type: "input", name: "worldName", message: "World Name:" },
-    { type: "input", name: "Port", message: "Port:" },
-    { type: "input", name: "RCONPort", message: "RCON Port:" },
-    {
-      type: "confirm",
-      name: "updateNow",
-      message: "Update server right now?",
-      default: false,
-    },
-  ]);
-  return answers;
-}
-
 function showLandingScreen() {
-  console.log(
-    chalk.bold(
-      `\n ----- ---   ----   ---- ----     ----      -` +
-        `\n     ---- ---     ------- ---- ---    ----- --` +
-        `\n -----     -------     ----- ------      --` +
-        `\n     __ _       _     _             _ _ ` +
-        `\n    / /(_) __ _| |__ | |_ _ __ __ _(_) |` +
-        `\n   / / | |/ _\` | '_ \\| __| \'__/ _\` | | |` +
-        `\n  / /__| | (_| | | | | |_| | | (_| | | |` +
-        `\n  \\____/_|\\_,  |_| |_|\\__|_|  \\__,_|_|_|` +
-        `\n          |___/                         ` +
-        `\n ----- ---   ----   ---- ----     ----      -` +
-        `\n     ---- ---     ------- ---- ---    ----- --` +
-        `\n -----     -------     ----- ------      --`
-    )
-  );
-  console.log(chalk.cyanBright.bold(`Lightrail CLI v${pkg.version}`));
+  // Gradient from rgb(96,255,255) to rgb(255,128,255)
+  const gradientStart = [96, 255, 255];
+  const gradientEnd = [255, 128, 255];
+  const asciiArtLines = [
+    " ----- ---   ----   ---- ----     ----      -",
+    "     ---- ---     ------- ---- ---    ----- --",
+    " -----     -------     ----- ------      --",
+    "     __ _       _     _             _ _ ",
+    "    / /(_) __ _| |__ | |_ _ __ __ _(_) |",
+    "   / / | |/ _` | '_ \\| __| '__/ _` | | |",
+    "  / /__| | (_| | | | | |_| | | (_| | | |",
+    "  \\____/_|\\_,  |_| |_|\\__|_|  \\__,_|_|_|",
+    "          |___/                         ",
+    " ----- ---   ----   ---- ----     ----      -",
+    "     ---- ---     ------- ---- ---    ----- --",
+    " -----     -------     ----- ------      --",
+  ];
+  function interpolateColor(start, end, factor) {
+    return start.map((v, i) => Math.round(v + (end[i] - v) * factor));
+  }
+  asciiArtLines.forEach((line, idx) => {
+    const factor = idx / (asciiArtLines.length - 1);
+    const [r, g, b] = interpolateColor(gradientStart, gradientEnd, factor);
+    console.log(chalk.rgb(r, g, b).bold(line));
+  });
+  console.log(chalk.cyanBright.bold(`${lightrail} CLI v${pkg.version}`));
   console.log(
     chalk.cyanBright.bold(
       "═════════════════════════════════════════════════════════════════════════════════"
@@ -141,9 +87,7 @@ function showLandingScreen() {
   );
   console.log(
     chalk.yellowBright.bold(
-      "Welcome to " +
-        chalk.magentaBright.bold("Lightrail") +
-        " - A Server Manager CLI tool!"
+      "Welcome to " + lightrail + " - A Server Manager CLI tool!"
     )
   );
   console.log(
@@ -178,15 +122,41 @@ function scanChildProcesses() {
 
 function registerChildProcess(proc, profile = null, serverName = null) {
   childProcesses.push(proc);
-  proc.on("exit", () => {
+  let output = "";
+  if (proc.stdout) {
+    proc.stdout.on("data", (data) => {
+      output += data.toString();
+    });
+  }
+  if (proc.stderr) {
+    proc.stderr.on("data", (data) => {
+      output += data.toString();
+    });
+  }
+  proc.on("exit", (code, signal) => {
     console.clear();
     showLandingScreen();
     console.log(
       chalk.redBright(
-        "Child process exited. Killing server and restarting CLI..."
+        `Child process exited (code: ${code}, signal: ${signal}). Killing server and restarting CLI...`
       )
     );
-    killServer();
+    if (output) {
+      console.log(chalk.yellowBright("Process output (stdout/stderr):"));
+      console.log(output);
+    }
+    // Game-specific kill logic
+    if (profile && profile.game === "Soulmask") {
+      if (typeof killSoulmaskServer === "function") {
+        killSoulmaskServer(profile);
+      }
+    } else if (profile && profile.game === "Palworld") {
+      if (typeof killPalworldServer === "function") {
+        killPalworldServer(proc._serverInstance || {});
+      }
+    } else {
+      killServer();
+    }
     setTimeout(() => main(), 1000);
   });
   // Set console title to show profile and server name if provided
@@ -209,62 +179,84 @@ function setConsoleTitle(state, profile = null, serverName = null) {
   }
 }
 
+function clearScreen() {
+  process.stdout.write("\x1Bc");
+  // console.clear();
+  showLandingScreen();
+}
+
+function withScreen(title, fn) {
+  setConsoleTitle(title);
+  clearScreen();
+  return fn();
+}
+
 export async function main() {
-  // Always clear and redraw landing screen before each prompt
-  setConsoleTitle("Landing");
-  console.clear();
-  showLandingScreen();
+  await withScreen("Landing", async () => {});
 
-  const games = ["Ark: Survival Ascended"];
-  setConsoleTitle("Select Game");
-  const { game } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "game",
-      message: "Select game:",
-      choices: games,
-      default: games[0],
-    },
-  ]);
-
-  setConsoleTitle("Select Profile");
-  console.clear();
-  showLandingScreen();
+  const games = ["Ark: Survival Ascended", "Soulmask", "Palworld"].sort();
+  const { game } = await withScreen("Select Game", async () =>
+    inquirer.prompt([
+      {
+        type: "list",
+        name: "game",
+        message: "Select game:",
+        choices: games,
+        default: games[0],
+      },
+    ])
+  );
 
   let profiles = loadProfiles();
-  let profileChoices = profiles.map((cfg, idx) => ({
+  // Only show profiles matching the selected game
+  let filteredProfiles = profiles.filter((p) => p.game === game);
+  let profileChoices = filteredProfiles.map((cfg, idx) => ({
     name: cfg.name,
     value: idx,
   }));
   profileChoices.push({ name: "Create new server profile", value: "new" });
-  const { profileIdx } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "profileIdx",
-      message: "Select server profile:",
-      choices: profileChoices,
-    },
-  ]);
-
-  setConsoleTitle("Select Server Instance");
-  console.clear();
-  showLandingScreen();
-
+  profileChoices.push({ name: "← Back", value: "back" });
+  const { profileIdx } = await withScreen("Select Profile", async () =>
+    inquirer.prompt([
+      {
+        type: "list",
+        name: "profileIdx",
+        message: "Select server profile:",
+        choices: profileChoices,
+      },
+    ])
+  );
+  if (profileIdx === "back") {
+    return main(); // Go back to game selection
+  }
+  // Use filteredProfiles for selection
   let profile;
   if (profileIdx === "new") {
-    setConsoleTitle("Create Profile");
-    profile = await promptForConfig(game);
+    profile = await withScreen("Create Profile", async () => {
+      if (game === "Ark: Survival Ascended") return promptForASAConfig();
+      if (game === "Soulmask") return promptForSoulmaskConfig();
+      if (game === "Palworld") return promptForPalworldConfig();
+    });
     if (!profile) return;
+    profile.game = game; // Assign game to profile
     profiles.push(profile);
     saveProfiles(profiles);
-    setConsoleTitle("Profile Saved");
-    console.clear();
-    showLandingScreen();
-    console.log("New server profile saved.");
+    await withScreen("Profile Saved", async () => {
+      console.log("New server profile saved.");
+    });
   } else {
-    profile = profiles[profileIdx];
+    profile = filteredProfiles[profileIdx];
+    if (!profile.game) profile.game = game; // Ensure game is set
     if (game === "Ark: Survival Ascended" && !profile.appid) {
       profile.appid = "2430930";
+      saveProfiles(profiles);
+    }
+    if (game === "Soulmask" && !profile.appid) {
+      profile.appid = "3017310";
+      saveProfiles(profiles);
+    }
+    if (game === "Palworld" && !profile.appid) {
+      profile.appid = "2394010";
       saveProfiles(profiles);
     }
   }
@@ -279,62 +271,104 @@ export async function main() {
     serversData[game].push(profileServers);
   }
   let serverChoices = profileServers.servers.map((srv, idx) => ({
-    name: `${srv.worldName} (Port: ${srv.Port}, RCON: ${srv.RCONPort})`,
+    name: srv.serverName ? `${srv.serverName}` : `Instance ${idx + 1}`,
     value: idx,
   }));
   serverChoices.push(new inquirer.Separator());
   serverChoices.push({ name: "Create new server instance", value: "new" });
+  serverChoices.push({
+    name: "Modify server instance",
+    value: "modify_instance",
+  });
   serverChoices.push(new inquirer.Separator());
   serverChoices.push({
     name: `Update server profile (${profile.name})`,
     value: "update_profile",
   });
-  setConsoleTitle("Select Server Instance");
-  console.clear();
-  showLandingScreen();
-  const { serverIdx } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "serverIdx",
-      message: `Select server instance for profile '${profile.name}':`,
-      choices: serverChoices,
-      pageSize: 10,
-    },
-  ]);
+  serverChoices.push({ name: "← Back", value: "back" });
+  const { serverIdx } = await withScreen("Select Server Instance", async () =>
+    inquirer.prompt([
+      {
+        type: "list",
+        name: "serverIdx",
+        message: `Select server instance for profile '${profile.name}':`,
+        choices: serverChoices,
+        pageSize: 10,
+      },
+    ])
+  );
+  if (serverIdx === "back") {
+    return main(); // Go back to profile selection
+  }
 
   let serverInstance;
   if (serverIdx === "new") {
-    setConsoleTitle("Create Server Instance");
-    console.clear();
-    showLandingScreen();
-    console.log("Creating new server instance");
-    serverInstance = await promptForServerInstance();
+    serverInstance = await withScreen("Create Server Instance", async () => {
+      if (game === "Ark: Survival Ascended")
+        return promptForASAServerInstance();
+      if (game === "Soulmask") return promptForSoulmaskServerInstance();
+      if (game === "Palworld") return promptForPalworldServerInstance();
+    });
     profileServers.servers.push(serverInstance);
     saveServers(serversData);
-    setConsoleTitle("Server Instance Saved");
-    console.clear();
-    showLandingScreen();
-    console.log("New server instance saved.");
+    await withScreen("Server Instance Saved", async () => {
+      console.log("New server instance saved.");
+    });
+  } else if (serverIdx === "modify_instance") {
+    // Select which instance to modify
+    const modChoices = profileServers.servers.map((srv, idx) => ({
+      name: srv.serverName ? `${srv.serverName}` : `Instance ${idx + 1}`,
+      value: idx,
+    }));
+    const { modIdx } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "modIdx",
+        message: "Select server instance to modify:",
+        choices: modChoices,
+      },
+    ]);
+    const prevInstance = profileServers.servers[modIdx];
+    // Pass previous instance as defaults/config to prompt function
+    let updatedInstance = await withScreen(
+      "Modify Server Instance",
+      async () => {
+        if (game === "Ark: Survival Ascended")
+          return promptForASAServerInstance(prevInstance);
+        if (game === "Soulmask")
+          return promptForSoulmaskServerInstance(prevInstance);
+        if (game === "Palworld")
+          return promptForPalworldServerInstance(prevInstance);
+      }
+    );
+    if (updatedInstance) {
+      profileServers.servers[modIdx] = updatedInstance;
+      saveServers(serversData);
+      await withScreen("Server Instance Updated", async () => {
+        console.log("Server instance updated.");
+      });
+    }
+    return main();
   } else if (serverIdx === "update_profile") {
-    setConsoleTitle("Update Profile");
-    console.clear();
-    showLandingScreen();
-    console.log("Updating server profile");
-    const updated = await promptForConfig(game, profile);
+    let updated = await withScreen("Update Profile", async () => {
+      if (game === "Ark: Survival Ascended") return promptForASAConfig(profile);
+      if (game === "Soulmask") return promptForSoulmaskConfig(profile);
+      if (game === "Palworld") return promptForPalworldConfig(profile);
+    });
+    if (game === "Ark: Survival Ascended" && updated) updated.appid = "2430930";
+    if (game === "Soulmask" && updated) updated.appid = "3017310";
+    if (game === "Palworld" && updated) updated.appid = "2394010";
+    if (updated) updated.game = game; // Ensure game is set on update
     if (!updated) return;
-    if (game === "Ark: Survival Ascended") updated.appid = "2430930";
     profiles[profileIdx] = updated;
     saveProfiles(profiles);
-    setConsoleTitle("Profile Updated");
-    console.clear();
-    showLandingScreen();
-    console.log("Server profile updated.");
+    await withScreen("Profile Updated", async () => {
+      console.log("Server profile updated.");
+    });
     return main();
   } else {
     serverInstance = profileServers.servers[serverIdx];
-    setConsoleTitle("Server Instance Selected");
-    console.clear();
-    showLandingScreen();
+    await withScreen("Server Instance Selected", async () => {});
     // Prompt for update after selection
     const { updateNow } = await inquirer.prompt([
       {
@@ -347,29 +381,15 @@ export async function main() {
     serverInstance.updateNow = updateNow;
   }
 
-  if (
-    !serverInstance.worldName ||
-    !serverInstance.Port ||
-    !serverInstance.RCONPort
-  ) {
-    setConsoleTitle("Error");
-    console.clear();
-    showLandingScreen();
-    console.error("ERROR: You must provide all three arguments!");
-    process.exit(1);
-  }
-
-  // Check for admin rights (Windows only)
-  setConsoleTitle("Admin Check");
+  await withScreen("Admin Check", async () => {});
   if (!(await isAdmin())) {
-    setConsoleTitle("Requesting Admin");
-    console.clear();
-    showLandingScreen();
-    console.log(
-      chalk.yellowBright(
-        "Administrator privileges required. Attempting to relaunch as administrator..."
-      )
-    );
+    await withScreen("Requesting Admin", async () => {
+      console.log(
+        chalk.yellowBright(
+          "Administrator privileges required. Attempting to relaunch as administrator..."
+        )
+      );
+    });
     const scriptPath = process.argv[1];
     const args = process.argv.slice(2).join(" ");
     sudo.exec(
@@ -377,13 +397,12 @@ export async function main() {
       { name: "Lightrail" },
       (error, stdout, stderr) => {
         if (error) {
-          setConsoleTitle("Admin Relaunch Failed");
-          console.clear();
-          showLandingScreen();
-          console.error(
-            chalk.redBright("Failed to restart as administrator:"),
-            error
-          );
+          withScreen("Admin Relaunch Failed", async () => {
+            console.error(
+              chalk.redBright("Failed to restart as administrator:"),
+              error
+            );
+          });
           process.exit(1);
         }
         process.exit(0);
@@ -391,89 +410,236 @@ export async function main() {
     );
     return;
   }
-  setConsoleTitle("Running as Admin");
-  console.clear();
-  showLandingScreen();
-  console.log("Running with administrator privileges...");
+  await withScreen("Running as Admin", async () => {
+    console.log("Running with administrator privileges...");
+  });
+
+  // Ensure server directory exists before update
+  let serverDir =
+    game === "Ark: Survival Ascended"
+      ? path.join(profile.dir, serverInstance.worldName)
+      : game === "Soulmask"
+        ? path.join(profile.dir, serverInstance.id)
+        : path.join(profile.dir, serverInstance.id); // Palworld
+  if (!fs.existsSync(serverDir)) {
+    fs.mkdirSync(serverDir, { recursive: true });
+  }
+
+  console.log("serverInstance", serverInstance);
 
   // Update server with SteamCMD if selected
   if (serverInstance.updateNow) {
-    setConsoleTitle("Updating Server");
-    console.clear();
-    showLandingScreen();
-    // Run SteamCMD update before starting server
-
-    try {
-      const steamcmdArgs = [
-        "+force_install_dir",
-        path.join(profile.dir, serverInstance.worldName),
-        "+login",
-        "anonymous",
-        "+app_update",
-        profile.appid,
-        "validate",
-        "+quit",
-      ];
-      console.log("Updating server with SteamCMD...");
-      const steamcmdProc = spawn(profile.steamcmd, steamcmdArgs, {
-        stdio: "inherit",
-      });
-      registerChildProcess(steamcmdProc);
-      await new Promise((resolve, reject) => {
-        steamcmdProc.on("close", (code) => {
-          if (code === 0) {
-            setConsoleTitle("SteamCMD Success");
-            console.log("Success.");
-            resolve();
-          } else {
-            setConsoleTitle("SteamCMD Failed");
-            console.log("Failed.");
-            reject(new Error("SteamCMD update failed."));
-          }
+    await withScreen("Updating Server", async () => {
+      try {
+        const steamcmdArgs = [
+          "+force_install_dir",
+          serverDir,
+          "+login",
+          "anonymous",
+          "+app_update",
+          profile.appid,
+          "validate",
+          "+quit",
+        ];
+        console.log("Updating server with SteamCMD...");
+        const steamcmdProc = spawn(profile.steamcmd, steamcmdArgs, {
+          stdio: "inherit",
         });
-      });
-    } catch (err) {
-      setConsoleTitle("SteamCMD Error");
-      console.log("Failed.");
-      console.error("SteamCMD update failed:", err.message);
+        registerChildProcess(steamcmdProc);
+        await new Promise((resolve, reject) => {
+          steamcmdProc.on("close", (code) => {
+            if (code === 0) {
+              setConsoleTitle("SteamCMD Success");
+              console.log("Success.");
+              resolve();
+            } else {
+              setConsoleTitle("SteamCMD Failed");
+              console.log("Failed.");
+              reject(new Error("SteamCMD update failed."));
+            }
+          });
+        });
+      } catch (err) {
+        await withScreen("SteamCMD Error", async () => {
+          console.error("SteamCMD update failed:", err.message);
+        });
+      }
+    });
+  }
+
+  await withScreen(
+    `Starting Server${profile.name ? ` | ${profile.name}` : ""}${
+      serverInstance.serverName ? ` · ${serverInstance.serverName}` : ""
+    }`,
+    async () => {
+      console.log("serverInstance", serverInstance);
+      console.log("profile", profile);
     }
-  }
+  );
 
-  // Start server and schedule restart if needed
-  setConsoleTitle("Starting Server", profile.name, serverInstance.serverName);
-  console.clear();
-  showLandingScreen();
-  const serverProc = startServer(profile, serverInstance);
-  registerChildProcess(serverProc);
+  let serverProc;
+  if (game === "Ark: Survival Ascended") {
+    serverProc = startServer(profile, serverInstance);
+    registerChildProcess(serverProc, profile, serverInstance.serverName);
+  } else if (game === "Soulmask") {
+    proc = startSoulmaskServer(profile, serverInstance);
+    serverProc = proc;
+    registerChildProcess(serverProc, profile, serverInstance.serverName);
+  } else if (game === "Palworld") {
+    serverProc = startPalworldServer(profile, serverInstance);
+    registerChildProcess(serverProc, profile, serverInstance.serverName);
+  }
   scanChildProcesses();
-  if (profile.restartTime) {
-    setConsoleTitle(
-      "Scheduled Restart",
-      profile.name,
-      serverInstance.serverName
+  let startTime = new Date();
+
+  // Show active server info screen with live uptime
+  await withScreen("Active Server Info", async () => {
+    // Print static info and record lines
+    const staticLines = [];
+    staticLines.push(chalk.greenBright.bold("Active Server:"));
+    staticLines.push(chalk.cyanBright(`Name: ${serverInstance.serverName}`));
+    staticLines.push(chalk.cyanBright(`PID: ${serverProc.pid}`));
+    staticLines.push(
+      chalk.cyanBright(`Started: ${startTime.toLocaleString()}`)
     );
-    scheduleRestart(
-      profile,
-      serverInstance,
-      profile.restartTime,
-      profile.updateBeforeRestart
-    );
-    console.clear();
-    showLandingScreen();
+    if (profile.restartTime) {
+      staticLines.push(
+        chalk.cyanBright(`Restart Time: ${profile.restartTime}`)
+      );
+    }
+    staticLines.forEach((line) => console.log(line));
+
+    const readline = await import("readline");
+    // Uptime line index
+    const uptimeLineIdx = staticLines.length;
+    // Print uptime line
+    const printUptime = () => {
+      const now = new Date();
+      const uptimeMs = now - startTime;
+      const uptimeSec = Math.floor(uptimeMs / 1000);
+      const uptimeMin = Math.floor(uptimeSec / 60);
+      const uptimeHr = Math.floor(uptimeMin / 60);
+      const uptimeStr = `${uptimeHr > 0 ? uptimeHr + "h " : ""}${uptimeMin % 60}m ${uptimeSec % 60}s`;
+      return chalk.cyanBright(`Uptime: ${uptimeStr}`);
+    };
+    console.log(printUptime());
+    // Print instructions
     console.log(
-      `Restart scheduled for ${profile.restartTime} (update: ${
-        profile.updateBeforeRestart ? "yes" : "no"
-      })`
+      chalk.yellowBright(
+        "Please follow server instructions to shut down the server."
+      )
     );
+    console.log(
+      chalk.yellowBright("This window will refresh when the server exits.")
+    );
+
+    // Total lines printed after uptime line
+    const totalLines = staticLines.length + 1 + 2; // static + uptime + 2 instructions
+
+    function updateUptime() {
+      // Move cursor to uptime line
+      readline.default.moveCursor(
+        process.stdout,
+        0,
+        -(totalLines - uptimeLineIdx)
+      );
+      readline.default.clearLine(process.stdout, 0);
+      process.stdout.write(printUptime() + "\n");
+      // Move cursor back to end
+      readline.default.moveCursor(
+        process.stdout,
+        0,
+        totalLines - uptimeLineIdx - 1
+      );
+    }
+    const interval = setInterval(updateUptime, 1000);
+    await new Promise((resolve) => {
+      serverProc.on("exit", () => {
+        clearInterval(interval);
+        resolve();
+      });
+    });
+  });
+  if (profile.restartTime) {
+    await withScreen("Scheduled Restart", async () => {
+      // On scheduled restart, update if requested
+      if (profile.updateBeforeRestart) {
+        try {
+          const steamcmdArgs = [
+            "+force_install_dir",
+            serverDir,
+            "+login",
+            "anonymous",
+            "+app_update",
+            profile.appid,
+            "validate",
+            "+quit",
+          ];
+          console.log("Updating server with SteamCMD before restart...");
+          const steamcmdProc = spawn(profile.steamcmd, steamcmdArgs, {
+            stdio: "inherit",
+          });
+          registerChildProcess(steamcmdProc);
+          await new Promise((resolve, reject) => {
+            steamcmdProc.on("close", (code) => {
+              if (code === 0) {
+                setConsoleTitle("SteamCMD Success");
+                console.log("Success.");
+                resolve();
+              } else {
+                setConsoleTitle("SteamCMD Failed");
+                console.log("Failed.");
+                reject(new Error("SteamCMD update failed."));
+              }
+            });
+          });
+        } catch (err) {
+          await withScreen("SteamCMD Error", async () => {
+            console.error(
+              "SteamCMD update failed before restart:",
+              err.message
+            );
+          });
+        }
+      }
+      scheduleRestart(
+        profile,
+        serverInstance,
+        profile.restartTime,
+        profile.updateBeforeRestart
+      );
+      console.log(
+        `Restart scheduled for ${profile.restartTime} (update: ${
+          profile.updateBeforeRestart ? "yes" : "no"
+        })`
+      );
+    });
   }
 }
 
-try {
-  await main();
-} catch (err) {
-  if (err && err.name === "ExitPromptError") {
-    console.log("\nPrompt cancelled by user (Ctrl+C). Exiting...");
+process.on("uncaughtException", (error) => {
+  if (error instanceof Error && error.name === "ExitPromptError") {
+    const orange = chalk.rgb(255, 128, 0);
+    console.log(
+      orange(
+        "\n\n───────────────────────────────────────────────────────────────────────────────"
+      )
+    );
+
+    console.log(
+      chalk
+        .rgb(255, 255, 96)
+        .bold("Thank you for using " + lightrail + ". See you again soon!")
+    );
+    console.log(
+      orange(
+        "───────────────────────────────────────────────────────────────────────────────\n"
+      )
+    );
     process.exit(0);
+  } else {
+    throw error;
   }
-  throw err;
-}
+});
+
+main();
