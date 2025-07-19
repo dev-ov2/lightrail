@@ -580,6 +580,7 @@ async function promptForASAServerInstance(defaults = {}) {
     }
   }
   answers.launchParamValues = paramValues;
+  answers.worldName = worldName;
   return answers;
 }
 module.exports = {
