@@ -12,7 +12,7 @@ A Node.js CLI tool for launching ARK game servers with selectable configurations
 
 1. Install dependencies:
    ```powershell
-   npm install
+   pnpm install
    ```
 2. Run the CLI with:
    ```powershell
