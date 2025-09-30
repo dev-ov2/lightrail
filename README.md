@@ -21,7 +21,7 @@ A Node.js CLI tool for launching ARK game servers with selectable configurations
 
 ## Customization
 
-- Add or edit server configurations in the configuration file (to be created).
+- Use the CLI to configure profiles for a given game.
 
 ## License
 
