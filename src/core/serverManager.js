@@ -1,4 +1,4 @@
-const { startASAServer, killASAServer } = require("./asa.js");
+const { startASAServer, killASAServer } = require("../games/asa.js");
 
 function startServer(profile, serverInstance) {
   // For now, only ASA is supported. Later, add game type switch.

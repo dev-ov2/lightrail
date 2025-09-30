@@ -516,7 +516,7 @@ async function promptForASAServerInstance(defaults = {}) {
       type: "input",
       name: "serverName",
       message: "Server Name:",
-      default: defaults.serverName || "",
+      required: true,
     },
     // World name is selected above, do not prompt again
     // Removed duplicate prompt array
