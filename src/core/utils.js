@@ -4,9 +4,19 @@ import path from "path";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const pkg = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../../package.json"), "utf8")
-);
+// Resolve base directory (supports Node SEA single executable: process.execPath)
+export function getBaseDir() {
+  return path.join(__dirname, "../..");
+}
+let pkg = { version: "?" };
+const pkgPath = path.join(getBaseDir(), "package.json");
+if (fs.existsSync(pkgPath)) {
+  try {
+    pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+  } catch {
+    // ignore malformed
+  }
+}
 
 const GAMES = ["Ark: Survival Ascended", "Soulmask", "Palworld"].sort();
 

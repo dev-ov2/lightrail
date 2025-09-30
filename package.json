@@ -9,7 +9,12 @@
   },
   "scripts": {
     "start": "node src/core/cli.js",
-    "package": "npx pkg . --targets node18-win-x64 --output build/Lightrail.exe"
+    "sea:prepare": "node sea-prep.cjs",
+    "sea:blob": "node --experimental-sea-config sea-config.json",
+    "sea:build:win": "node -e \"require('fs').cpSync(process.execPath,'build/Lightrail.exe');\" && postject build/Lightrail.exe NODE_SEA_BLOB sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2",
+    "sea:build:linux": "node -e \"require('fs').cpSync(process.execPath,'build/Lightrail-linux');\" && postject build/Lightrail-linux NODE_SEA_BLOB sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2",
+    "build:linux": "pnpm run sea:prepare && pnpm run sea:blob && pnpm run sea:build:linux",
+    "build:win": "pnpm run sea:prepare && pnpm run sea:blob && pnpm run sea:build:win"
   },
   "publishConfig": {
     "access": "public"
@@ -32,6 +37,6 @@
     "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
-    "pkg": "^5.8.1"
+    "postject": "1.0.0-alpha.6"
   }
 }
