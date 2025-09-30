@@ -1,20 +1,21 @@
 #!/usr/bin/env node
-const fs = require("fs");
-const path = require("path");
-const chalk = require("chalk");
-const { withScreen } = require("./utils.js");
-const { selectGame } = require("./workflows/game/select.js");
-const { selectProfile } = require("./workflows/profile/select.js");
-const { selectInstance } = require("./workflows/instance/select.js");
-const { start } = require("./workflows/run.js");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import chalk from "chalk";
+import { withScreen } from "./utils.js";
+import { selectGame } from "./workflows/game/select.js";
+import { selectProfile } from "./workflows/profile/select.js";
+import { selectInstance } from "./workflows/instance/select.js";
+import { start } from "./workflows/run.js";
 
 // For pkg compatibility, use process.cwd() as __dirname
 // const __dirname = process.cwd();
 const lightrail = chalk.rgb(96, 255, 255).bold("Lightrail");
 
-const pkg = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../..", "package.json"))
-);
+// Derive __dirname equivalent in ESM safely on Windows
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const CONFIG_DIR = path.join(
   process.env.USERPROFILE || process.env.HOME,
@@ -24,61 +25,6 @@ const CONFIG_DIR = path.join(
 if (!fs.existsSync(CONFIG_DIR)) {
   fs.mkdirSync(CONFIG_DIR, { recursive: true });
 }
-const PROFILES_FILE = path.join(CONFIG_DIR, "server-profiles.json");
-
-let childProcesses = [];
-function scanChildProcesses() {
-  // Scan for new child processes every 10 seconds
-  setInterval(() => {
-    childProcesses = childProcesses.filter((cp) => !cp.killed);
-    // Optionally, scan for new children here (custom logic if needed)
-  }, 10000);
-}
-
-// function registerChildProcess(proc, profile = null, serverName = null) {
-//   childProcesses.push(proc);
-//   let output = "";
-//   if (proc.stdout) {
-//     proc.stdout.on("data", (data) => {
-//       output += data.toString();
-//     });
-//   }
-//   if (proc.stderr) {
-//     proc.stderr.on("data", (data) => {
-//       output += data.toString();
-//     });
-//   }
-//   proc.on("exit", (code, signal) => {
-//     console.clear();
-//     showLandingScreen();
-//     console.log(
-//       chalk.redBright(
-//         `Child process exited (code: ${code}, signal: ${signal}). Killing server and restarting CLI...`
-//       )
-//     );
-//     if (output) {
-//       console.log(chalk.yellowBright("Process output (stdout/stderr):"));
-//       console.log(output);
-//     }
-//     // Game-specific kill logic
-//     if (profile && profile.game === "Soulmask") {
-//       if (typeof killSoulmaskServer === "function") {
-//         killSoulmaskServer(profile);
-//       }
-//     } else if (profile && profile.game === "Palworld") {
-//       if (typeof killPalworldServer === "function") {
-//         killPalworldServer(proc._serverInstance || {});
-//       }
-//     } else {
-//       killServer();
-//     }
-//     setTimeout(() => main(), 1000);
-//   });
-//   // Set console title to show profile and server name if provided
-//   if (profile && serverName) {
-//     setConsoleTitle("", profile, serverName);
-//   }
-// }
 
 async function main() {
   await withScreen("Landing", async () => {});

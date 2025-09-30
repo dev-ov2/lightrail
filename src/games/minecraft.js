@@ -1,7 +1,7 @@
-const inquirer = require("inquirer");
-const { spawn } = require("child_process");
-const path = require("path");
-const fs = require("fs");
+import inquirer from "inquirer";
+import { spawn } from "child_process";
+import path from "path";
+import fs from "fs";
 
 async function promptForMinecraftConfig(defaults = {}) {
   const answers = await inquirer.prompt([
@@ -289,7 +289,13 @@ function killMinecraftServer(serverInstance) {
   }
 }
 
-module.exports = {
+export {
+  promptForMinecraftConfig,
+  promptForMinecraftServerInstance,
+  startMinecraftServer,
+  killMinecraftServer,
+};
+export default {
   promptForMinecraftConfig,
   promptForMinecraftServerInstance,
   startMinecraftServer,

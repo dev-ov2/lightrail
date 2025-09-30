@@ -1,13 +1,14 @@
-const inquirer = require("inquirer");
-const { withScreen } = require("../../utils.js");
-const { loadServers } = require("./utils.js");
-const { createInstance } = require("./create.js");
-const { createProfile } = require("../profile/create.js");
+import inquirer from "inquirer";
+import { withScreen } from "../../utils.js";
+import { loadServers } from "./utils.js";
+import { createInstance } from "./create.js";
+import { createProfile } from "../profile/create.js";
 
-const selectInstance = async (game, profileInfo) => {
+export const selectInstance = async (game, profileInfo) => {
   const { profile, profiles } = profileInfo;
 
   let serversData = loadServers();
+  let serverInstance;
   if (!serversData[game]) serversData[game] = [];
   let profileServers = serversData[game].find(
     (s) => s.profile === profile.name
@@ -70,5 +71,3 @@ const selectInstance = async (game, profileInfo) => {
     return serverInstance;
   }
 };
-
-module.exports = { selectInstance };

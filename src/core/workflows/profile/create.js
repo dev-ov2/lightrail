@@ -1,10 +1,10 @@
-const { withScreen } = require("../../utils.js");
-const { loadProfiles, saveProfiles } = require("./utils.js");
-const { promptForASAConfig } = require("../../../games/asa.js");
-const { promptForSoulmaskConfig } = require("../../../games/soulmask.js");
-const { promptForPalworldConfig } = require("../../../games/palworld.js");
+import { withScreen } from "../../utils.js";
+import { loadProfiles, saveProfiles } from "./utils.js";
+import { promptForASAConfig } from "../../../games/asa.js";
+import { promptForSoulmaskConfig } from "../../../games/soulmask.js";
+import { promptForPalworldConfig } from "../../../games/palworld.js";
 
-const createProfile = async (game, profiles, profile) => {
+export const createProfile = async (game, profiles, profile) => {
   if (!profile) {
     const profile = await withScreen("Create Profile", async () => {
       if (game === "Ark: Survival Ascended") return promptForASAConfig();
@@ -38,4 +38,4 @@ const createProfile = async (game, profiles, profile) => {
   }
 };
 
-module.exports = { createProfile };
+export default { createProfile };

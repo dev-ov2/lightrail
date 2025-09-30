@@ -1,19 +1,12 @@
-const chalk = require("chalk");
-const { showLandingScreen, setConsoleTitle } = require("./utils.js");
-const { killServer } = require("./serverManager.js");
-const { killSoulmaskServer } = require("../games/soulmask.js");
-const { killPalworldServer } = require("../games/palworld.js");
+import chalk from "chalk";
+import { showLandingScreen, setConsoleTitle } from "./utils.js";
+import { killServer } from "./serverManager.js";
+import { killSoulmaskServer } from "../games/soulmask.js";
+import { killPalworldServer } from "../games/palworld.js";
 
 let childProcesses = [];
-function scanChildProcesses() {
-  // Scan for new child processes every 10 seconds
-  setInterval(() => {
-    childProcesses = childProcesses.filter((cp) => !cp.killed);
-    // Optionally, scan for new children here (custom logic if needed)
-  }, 10000);
-}
 
-function registerChildProcess(
+export function registerChildProcess(
   proc,
   profile = null,
   serverName = null,
@@ -55,7 +48,7 @@ function registerChildProcess(
     } else {
       killServer();
     }
-    setTimeout(() => main(), 1000);
+    setTimeout(timeoutFn, 1000);
   });
   // Set console title to show profile and server name if provided
   if (profile && serverName) {
@@ -63,7 +56,11 @@ function registerChildProcess(
   }
 }
 
-module.exports = {
-  scanChildProcesses,
-  registerChildProcess,
-};
+export function scanChildProcesses() {
+  // Scan for new child processes every 10 seconds
+  setInterval(() => {
+    childProcesses = childProcesses.filter((cp) => !cp.killed);
+  }, 10000);
+}
+
+export default { scanChildProcesses, registerChildProcess };

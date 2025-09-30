@@ -1,13 +1,18 @@
-const chalk = require("chalk");
-const pkg = require("../../package.json");
-const fs = require("fs");
-const path = require("path");
+import chalk from "chalk";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const pkg = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "../../package.json"), "utf8")
+);
 
 const GAMES = ["Ark: Survival Ascended", "Soulmask", "Palworld"].sort();
 
 const lightrail = chalk.rgb(96, 255, 255).bold("Lightrail");
 
-function showLandingScreen() {
+export function showLandingScreen() {
   // Gradient from rgb(96,255,255) to rgb(255,128,255)
   const gradientStart = [96, 255, 255];
   const gradientEnd = [255, 128, 255];
@@ -65,7 +70,7 @@ function showLandingScreen() {
   );
 }
 
-function setConsoleTitle(state, profile = null, serverName = null) {
+export function setConsoleTitle(state, profile = null, serverName = null) {
   let title = state;
   if (profile && serverName) {
     title = `${profile} · ${serverName}`;
@@ -79,22 +84,16 @@ function setConsoleTitle(state, profile = null, serverName = null) {
   }
 }
 
-function clearScreen() {
+export function clearScreen() {
   process.stdout.write("\x1Bc");
   // console.clear();
   showLandingScreen();
 }
 
-function withScreen(title, fn) {
+export function withScreen(title, fn) {
   setConsoleTitle(title);
   clearScreen();
   return fn();
 }
 
-module.exports = {
-  GAMES,
-  showLandingScreen,
-  setConsoleTitle,
-  clearScreen,
-  withScreen,
-};
+export { GAMES };

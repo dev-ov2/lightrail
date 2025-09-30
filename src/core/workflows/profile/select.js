@@ -1,9 +1,9 @@
-const inquirer = require("inquirer");
-const { loadProfiles, saveProfiles } = require("./utils.js");
-const { withScreen } = require("../../utils.js");
-const { createProfile } = require("./create.js");
+import inquirer from "inquirer";
+import { loadProfiles, saveProfiles } from "./utils.js";
+import { withScreen } from "../../utils.js";
+import { createProfile } from "./create.js";
 
-const selectProfile = async (game) => {
+export const selectProfile = async (game) => {
   let profiles = loadProfiles();
   // Only show profiles matching the selected game
   let filteredProfiles = profiles.filter((p) => p.game === game);
@@ -49,4 +49,4 @@ const selectProfile = async (game) => {
   return { profile, profiles };
 };
 
-module.exports = { selectProfile };
+export default { selectProfile };

@@ -8,11 +8,11 @@ function getSoulmaskInstanceDisplayName(instance, idx) {
   }
   return `Instance ${idx + 1}`;
 }
-const inquirer = require("inquirer");
-const { spawn, execSync } = require("child_process");
-const path = require("path");
-const fs = require("fs");
-const net = require("net");
+import inquirer from "inquirer";
+import { spawn, execSync } from "child_process";
+import path from "path";
+import fs from "fs";
+import net from "net";
 
 async function promptForSoulmaskConfig(defaults = {}) {
   const answers = await inquirer.prompt([
@@ -307,7 +307,14 @@ function killSoulmaskServer(profile) {
   });
 }
 
-module.exports = {
+export {
+  promptForSoulmaskConfig,
+  promptForSoulmaskServerInstance,
+  startSoulmaskServer,
+  killSoulmaskServer,
+  getSoulmaskInstanceDisplayName,
+};
+export default {
   promptForSoulmaskConfig,
   promptForSoulmaskServerInstance,
   startSoulmaskServer,

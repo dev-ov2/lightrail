@@ -1,7 +1,7 @@
-const inquirer = require("inquirer");
-const { withScreen, GAMES } = require("../../utils.js");
+import inquirer from "inquirer";
+import { withScreen, GAMES } from "../../utils.js";
 
-const selectGame = async () => {
+export const selectGame = async () => {
   const { game } = await withScreen("Select Game", async () =>
     inquirer.prompt([
       {
@@ -16,4 +16,4 @@ const selectGame = async () => {
   return game;
 };
 
-module.exports = { selectGame };
+export default { selectGame };

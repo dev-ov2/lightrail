@@ -1,9 +1,13 @@
-const fs = require("fs");
-const path = require("path");
-const { spawn } = require("child_process");
-const { withScreen, setConsoleTitle } = require("../utils.js");
-const { registerChildProcess } = require("../process.js");
-const { scheduleRestart } = require("../scheduler.js");
+import fs from "fs";
+import path from "path";
+import { spawn } from "child_process";
+import { withScreen, setConsoleTitle } from "../utils.js";
+import { registerChildProcess, scanChildProcesses } from "../process.js";
+import { scheduleRestart } from "../scheduler.js";
+import chalk from "chalk";
+import { startASAServer } from "../../games/asa.js";
+import { startSoulmaskServer } from "../../games/soulmask.js";
+import { startPalworldServer } from "../../games/palworld.js";
 
 const updateServer = async (game, profile, serverInstance, timeoutFn) => {
   // Ensure server directory exists before update
@@ -58,7 +62,7 @@ const updateServer = async (game, profile, serverInstance, timeoutFn) => {
   });
 };
 
-const startServer = async (game, profile, serverInstance, timeoutFn) => {
+const launchServer = async (game, profile, serverInstance, timeoutFn) => {
   await withScreen(
     `Starting Server${profile.name ? ` | ${profile.name}` : ""}${
       serverInstance.serverName ? ` · ${serverInstance.serverName}` : ""
@@ -71,7 +75,7 @@ const startServer = async (game, profile, serverInstance, timeoutFn) => {
 
   let serverProc;
   if (game === "Ark: Survival Ascended") {
-    serverProc = startServer(profile, serverInstance);
+    serverProc = startASAServer(profile, serverInstance);
     registerChildProcess(
       serverProc,
       profile,
@@ -79,8 +83,7 @@ const startServer = async (game, profile, serverInstance, timeoutFn) => {
       timeoutFn
     );
   } else if (game === "Soulmask") {
-    proc = startSoulmaskServer(profile, serverInstance);
-    serverProc = proc;
+    serverProc = startSoulmaskServer(profile, serverInstance);
     registerChildProcess(
       serverProc,
       profile,
@@ -97,9 +100,11 @@ const startServer = async (game, profile, serverInstance, timeoutFn) => {
     );
   }
   scanChildProcesses();
+
+  return serverProc;
 };
 
-const tick = async (serverInstance, profile, startTime) => {
+const tick = async (serverInstance, profile, startTime, serverProc) => {
   await withScreen("Active Server Info", async () => {
     // Print static info and record lines
     const staticLines = [];
@@ -116,7 +121,7 @@ const tick = async (serverInstance, profile, startTime) => {
     }
     staticLines.forEach((line) => console.log(line));
 
-    const readline = require("readline");
+    const readline = await import("readline");
     // Uptime line index
     const uptimeLineIdx = staticLines.length;
     // Print uptime line
@@ -163,7 +168,7 @@ const tick = async (serverInstance, profile, startTime) => {
   });
 };
 
-setupRestart = async (profile, serverInstance) => {
+const setupRestart = async (profile, serverInstance) => {
   if (profile.restartTime) {
     await withScreen("Scheduled Restart", async () => {
       // On scheduled restart, update if requested
@@ -182,16 +187,21 @@ setupRestart = async (profile, serverInstance) => {
   }
 };
 
-const start = async (game, profile, serverInstance, timeoutFn) => {
+export const start = async (game, profile, serverInstance, timeoutFn) => {
   if (serverInstance.updateNow) {
     await updateServer(game, profile, serverInstance, timeoutFn);
   }
 
-  await startServer(game, profile, serverInstance, timeoutFn);
+  const serverProc = await launchServer(
+    game,
+    profile,
+    serverInstance,
+    timeoutFn
+  );
   let startTime = new Date();
-  await tick(serverInstance, profile, startTime);
+  await tick(serverInstance, profile, startTime, serverProc);
 
   await setupRestart(profile, serverInstance);
 };
 
-module.exports = { start };
+export default { start };

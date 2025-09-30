@@ -1,7 +1,7 @@
-const { spawn, execSync } = require("child_process");
-const path = require("path");
-const fs = require("fs");
-const inquirer = require("inquirer");
+import { spawn, execSync } from "child_process";
+import path from "path";
+import fs from "fs";
+import inquirer from "inquirer";
 
 function getChildPids(parentPid) {
   if (process.platform !== "win32") return [];
@@ -595,7 +595,14 @@ async function promptForASAServerInstance(defaults = {}) {
   answers.worldName = worldName;
   return answers;
 }
-module.exports = {
+export {
+  startASAServer,
+  killASAProcessTree,
+  killASAServer,
+  promptForASAConfig,
+  promptForASAServerInstance,
+};
+export default {
   startASAServer,
   killASAProcessTree,
   killASAServer,
