@@ -4,14 +4,14 @@ const { spawn } = require("child_process");
 const { withScreen, setConsoleTitle } = require("../utils.js");
 const { registerChildProcess, scanChildProcesses } = require("../process.js");
 const { scheduleRestart } = require("../scheduler.js");
-const { startGameServer } = require("../../games/index.js");
+const { startGameServer, ARK, SOULMASK } = require("../../games/index.js");
 
 const updateServer = async (game, profile, serverInstance, timeoutFn) => {
   // Ensure server directory exists before update
   let serverDir =
-    game === "Ark: Survival Ascended"
+    game === ARK
       ? path.join(profile.dir, serverInstance.worldName)
-      : game === "Soulmask"
+      : game === SOULMASK
       ? path.join(profile.dir, serverInstance.id)
       : path.join(profile.dir, serverInstance.id); // Palworld
   if (!fs.existsSync(serverDir)) {

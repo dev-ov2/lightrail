@@ -3,6 +3,7 @@ const { showLandingScreen, setConsoleTitle } = require("./utils.js");
 const { killServer } = require("./serverManager.js");
 const { killSoulmaskServer } = require("../games/soulmask.js");
 const { killPalworldServer } = require("../games/palworld.js");
+const { SOULMASK, PALWORLD } = require("../games/index.js");
 
 let childProcesses = [];
 function scanChildProcesses() {
@@ -44,11 +45,11 @@ function registerChildProcess(
       console.log(output);
     }
     // Game-specific kill logic
-    if (profile && profile.game === "Soulmask") {
+    if (profile && profile.game === SOULMASK) {
       if (typeof killSoulmaskServer === "function") {
         killSoulmaskServer(profile);
       }
-    } else if (profile && profile.game === "Palworld") {
+    } else if (profile && profile.game === PALWORLD) {
       if (typeof killPalworldServer === "function") {
         killPalworldServer(proc._serverInstance || {});
       }

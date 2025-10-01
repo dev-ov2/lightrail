@@ -14,15 +14,19 @@ const {
   promptForPalworldConfig,
 } = require("../games/palworld.js");
 
-const GAMES = ["Ark: Survival Ascended", "Soulmask", "Palworld"].sort();
+const ARK = "Ark: Survival Ascended";
+const SOULMASK = "Soulmask";
+const PALWORLD = "Palworld";
+
+const GAMES = [ARK, SOULMASK, PALWORLD].sort();
 
 const getAppId = (game) => {
   switch (game) {
-    case "Ark: Survival Ascended":
+    case ARK:
       return "2430930";
-    case "Soulmask":
+    case SOULMASK:
       return "3017310";
-    case "Palworld":
+    case PALWORLD:
       return "2394010";
     default:
       return null;
@@ -31,11 +35,11 @@ const getAppId = (game) => {
 
 const promptForProfile = (game, prevConfig) => {
   switch (game) {
-    case "Ark: Survival Ascended":
+    case ARK:
       return promptForASAConfig(prevConfig);
-    case "Soulmask":
+    case SOULMASK:
       return promptForSoulmaskConfig(prevConfig);
-    case "Palworld":
+    case PALWORLD:
       return promptForPalworldConfig(prevConfig);
     default:
       throw new Error(`Unsupported game: ${game}`);
@@ -44,11 +48,11 @@ const promptForProfile = (game, prevConfig) => {
 
 const promptForServerInstance = (game, prevInstance) => {
   switch (game) {
-    case "Ark: Survival Ascended":
+    case ARK:
       return promptForASAServerInstance(prevInstance);
-    case "Soulmask":
+    case SOULMASK:
       return promptForSoulmaskServerInstance(prevInstance);
-    case "Palworld":
+    case PALWORLD:
       return promptForPalworldServerInstance(prevInstance);
     default:
       throw new Error(`Unsupported game: ${game}`);
@@ -57,11 +61,11 @@ const promptForServerInstance = (game, prevInstance) => {
 
 const startGameServer = async (game, profile, serverInstance) => {
   switch (game) {
-    case "Ark: Survival Ascended":
+    case ARK:
       return startASAServer(profile, serverInstance);
-    case "Soulmask":
+    case SOULMASK:
       return startSoulmaskServer(profile, serverInstance);
-    case "Palworld":
+    case PALWORLD:
       return startPalworldServer(profile, serverInstance);
     default:
       throw new Error(`Unsupported game: ${game}`);
@@ -69,6 +73,9 @@ const startGameServer = async (game, profile, serverInstance) => {
 };
 
 module.exports = {
+  ARK,
+  SOULMASK,
+  PALWORLD,
   GAMES,
   getAppId,
   promptForProfile,
