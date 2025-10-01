@@ -1,10 +1,6 @@
 #!/usr/bin/env node
-const fs = require("fs");
-const path = require("path");
 const chalk = require("chalk");
 const { withScreen } = require("./utils.js");
-const { withScreen, getBaseDir } = require("./utils.js");
-const { getConfigDir, ensureDir } = require("./platform.js");
 const { selectGame } = require("./workflows/game/select.js");
 const { selectProfile } = require("./workflows/profile/select.js");
 const { selectInstance } = require("./workflows/instance/select.js");

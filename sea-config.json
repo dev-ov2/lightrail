@@ -1,6 +1,6 @@
 {
-  "main": "src/core/cli.js",
+  "main": "dist/cli.cjs",
   "output": "sea-prep.blob",
-  "useSnapshot": true,
-  "assets": ["package.json"]
+  "useSnapshot": false,
+  "useCodeCache": true
 }

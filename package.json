@@ -2,14 +2,14 @@
   "name": "@ov2/lightrail",
   "version": "1.2.2",
   "description": "Node.js CLI tool for launching and managing ARK game servers with restart scheduling.",
-  "main": "cli.js",
+  "main": "src/core/cli.js",
   "type": "commonjs",
   "bin": {
-    "lightrail": "cli.js"
+    "lightrail": "src/core/cli.js"
   },
   "scripts": {
     "start": "node src/core/cli.js",
-    "sea:prepare": "node sea-prep.cjs",
+    "sea:prepare": "pnpx esbuild src/core/cli.js   --bundle --platform=node --format=cjs  --outfile=dist/cli.cjs && node sea-prep.cjs",
     "sea:blob": "node --experimental-sea-config sea-config.json",
     "sea:build:win": "node -e \"require('fs').cpSync(process.execPath,'build/Lightrail.exe');\" && postject build/Lightrail.exe NODE_SEA_BLOB sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2",
     "sea:build:linux": "node -e \"require('fs').cpSync(process.execPath,'build/Lightrail-linux');\" && postject build/Lightrail-linux NODE_SEA_BLOB sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2",
@@ -37,6 +37,7 @@
     "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
+    "esbuild": "^0.25.10",
     "postject": "1.0.0-alpha.6"
   }
 }

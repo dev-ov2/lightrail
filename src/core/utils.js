@@ -1,15 +1,15 @@
 const chalk = require("chalk");
-const pkg = require("../../package.json");
 const fs = require("fs");
 const path = require("path");
 const { fileURLToPath } = require("url");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-// Resolve base directory (supports Node SEA single executable: process.execPath)
+// In CommonJS, __filename and __dirname are available by default
+// __dirname and __filename are available globally, no need to redefine
+
 function getBaseDir() {
   return path.join(__dirname, "../..");
 }
+
 let pkg = { version: "?" };
 const pkgPath = path.join(getBaseDir(), "package.json");
 if (fs.existsSync(pkgPath)) {
