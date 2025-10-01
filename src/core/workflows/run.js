@@ -2,8 +2,9 @@ const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
 const { withScreen, setConsoleTitle } = require("../utils.js");
-const { registerChildProcess } = require("../process.js");
+const { registerChildProcess, scanChildProcesses } = require("../process.js");
 const { scheduleRestart } = require("../scheduler.js");
+const { startGameServer } = require("../../games/index.js");
 
 const updateServer = async (game, profile, serverInstance, timeoutFn) => {
   // Ensure server directory exists before update
@@ -16,8 +17,6 @@ const updateServer = async (game, profile, serverInstance, timeoutFn) => {
   if (!fs.existsSync(serverDir)) {
     fs.mkdirSync(serverDir, { recursive: true });
   }
-
-  console.log("serverInstance", serverInstance);
 
   // Update server with SteamCMD if selected
   await withScreen("Updating Server", async () => {
@@ -69,33 +68,14 @@ const startServer = async (game, profile, serverInstance, timeoutFn) => {
     }
   );
 
-  let serverProc;
-  if (game === "Ark: Survival Ascended") {
-    serverProc = startServer(profile, serverInstance);
-    registerChildProcess(
-      serverProc,
-      profile,
-      serverInstance.serverName,
-      timeoutFn
-    );
-  } else if (game === "Soulmask") {
-    proc = startSoulmaskServer(profile, serverInstance);
-    serverProc = proc;
-    registerChildProcess(
-      serverProc,
-      profile,
-      serverInstance.serverName,
-      timeoutFn
-    );
-  } else if (game === "Palworld") {
-    serverProc = startPalworldServer(profile, serverInstance);
-    registerChildProcess(
-      serverProc,
-      profile,
-      serverInstance.serverName,
-      timeoutFn
-    );
-  }
+  const serverProc = startGameServer(game, profile, serverInstance);
+
+  registerChildProcess(
+    serverProc,
+    profile,
+    serverInstance.serverName,
+    timeoutFn
+  );
   scanChildProcesses();
 };
 

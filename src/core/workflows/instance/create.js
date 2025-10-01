@@ -1,14 +1,7 @@
 const inquirer = require("inquirer");
 const { withScreen } = require("../../utils.js");
-
-const { promptForASAServerInstance } = require("../../../games/asa.js");
-const {
-  promptForSoulmaskServerInstance,
-} = require("../../../games/soulmask.js");
-const {
-  promptForPalworldServerInstance,
-} = require("../../../games/palworld.js");
 const { saveServers } = require("./utils.js");
+const { promptForServerInstance } = require("../../../games/index.js");
 
 const createInstance = async (
   game,
@@ -19,12 +12,9 @@ const createInstance = async (
   let serverInstance;
   if (!hasInstance) {
     // create new
-    serverInstance = await withScreen("Create Server Instance", async () => {
-      if (game === "Ark: Survival Ascended")
-        return promptForASAServerInstance();
-      if (game === "Soulmask") return promptForSoulmaskServerInstance();
-      if (game === "Palworld") return promptForPalworldServerInstance();
-    });
+    serverInstance = await withScreen("Create Server Instance", async () =>
+      promptForServerInstance(game)
+    );
     profileServers.servers.push(serverInstance);
     saveServers(serversData);
     return serverInstance;
@@ -44,16 +34,8 @@ const createInstance = async (
     ]);
     const prevInstance = profileServers.servers[modIdx];
     // Pass previous instance as defaults/config to prompt function
-    let updatedInstance = await withScreen(
-      "Modify Server Instance",
-      async () => {
-        if (game === "Ark: Survival Ascended")
-          return promptForASAServerInstance(prevInstance);
-        if (game === "Soulmask")
-          return promptForSoulmaskServerInstance(prevInstance);
-        if (game === "Palworld")
-          return promptForPalworldServerInstance(prevInstance);
-      }
+    let updatedInstance = await withScreen("Modify Server Instance", async () =>
+      promptForServerInstance(game, prevInstance)
     );
     if (updatedInstance) {
       profileServers.servers[modIdx] = updatedInstance;

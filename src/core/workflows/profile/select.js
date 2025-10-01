@@ -32,16 +32,9 @@ const selectProfile = async (game) => {
   } else {
     profile = filteredProfiles[profileIdx];
     if (!profile.game) profile.game = game; // Ensure game is set
-    if (game === "Ark: Survival Ascended" && !profile.appid) {
-      profile.appid = "2430930";
-      saveProfiles(profiles);
-    }
-    if (game === "Soulmask" && !profile.appid) {
-      profile.appid = "3017310";
-      saveProfiles(profiles);
-    }
-    if (game === "Palworld" && !profile.appid) {
-      profile.appid = "2394010";
+
+    if (!profile.appId) {
+      profile.appId = getAppId(game);
       saveProfiles(profiles);
     }
   }

@@ -20,8 +20,6 @@ if (fs.existsSync(pkgPath)) {
   }
 }
 
-const GAMES = ["Ark: Survival Ascended", "Soulmask", "Palworld"].sort();
-
 const lightrail = chalk.rgb(96, 255, 255).bold("Lightrail");
 
 function showLandingScreen() {
@@ -109,7 +107,6 @@ function withScreen(title, fn) {
 }
 
 module.exports = {
-  GAMES,
   showLandingScreen,
   setConsoleTitle,
   clearScreen,

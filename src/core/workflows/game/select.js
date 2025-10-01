@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
-const { withScreen, GAMES } = require("../../utils.js");
+const { withScreen } = require("../../utils.js");
+const { GAMES } = require("../../../games/index.js");
 
 const selectGame = async () => {
   const { game } = await withScreen("Select Game", async () =>
