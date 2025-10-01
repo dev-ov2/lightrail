@@ -13,6 +13,7 @@ import { spawn, execSync } from "child_process";
 import path from "path";
 import fs from "fs";
 import net from "net";
+import { getDefaultGameDir, getDefaultSteamCmdPath } from "../core/platform.js";
 
 async function promptForSoulmaskConfig(defaults = {}) {
   const answers = await inquirer.prompt([
@@ -26,13 +27,13 @@ async function promptForSoulmaskConfig(defaults = {}) {
       type: "input",
       name: "dir",
       message: "Server install directory:",
-      default: defaults.dir || "C:/lightrail/soulmask",
+      default: defaults.dir || getDefaultGameDir("soulmask"),
     },
     {
       type: "input",
       name: "steamcmd",
       message: "SteamCMD executable path:",
-      default: defaults.steamcmd || "C:/steamcmd/steamcmd.exe",
+      default: defaults.steamcmd || getDefaultSteamCmdPath(),
     },
     {
       type: "input",

@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import chalk from "chalk";
 import { withScreen, getBaseDir } from "./utils.js";
+import { getConfigDir, ensureDir } from "./platform.js";
 import { selectGame } from "./workflows/game/select.js";
 import { selectProfile } from "./workflows/profile/select.js";
 import { selectInstance } from "./workflows/instance/select.js";
@@ -15,19 +16,8 @@ const lightrail = chalk.rgb(96, 255, 255).bold("Lightrail");
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Store configs in user Documents unless packaged; when packaged allow relative 'config' dir fallback
-let CONFIG_DIR = path.join(
-  process.env.USERPROFILE || process.env.HOME || getBaseDir(),
-  "Documents",
-  "lightrail"
-);
-// Fallback for single-executable (SEA) scenario: if Documents path not writable
-if (!fs.existsSync(CONFIG_DIR)) {
-  CONFIG_DIR = path.join(getBaseDir(), "config");
-}
-if (!fs.existsSync(CONFIG_DIR)) {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-}
+// Determine config directory cross-platform
+const CONFIG_DIR = ensureDir(getConfigDir());
 
 async function main() {
   await withScreen("Landing", async () => {});

@@ -1,6 +1,7 @@
 import inquirer from "inquirer";
 import { spawn } from "child_process";
 import path from "path";
+import { getDefaultGameDir, getDefaultSteamCmdPath } from "../core/platform.js";
 
 async function promptForPalworldConfig(defaults = {}) {
   const answers = await inquirer.prompt([
@@ -14,13 +15,13 @@ async function promptForPalworldConfig(defaults = {}) {
       type: "input",
       name: "dir",
       message: "Server install directory:",
-      default: defaults.dir || "C:/lightrail/palworld",
+      default: defaults.dir || getDefaultGameDir("palworld"),
     },
     {
       type: "input",
       name: "steamcmd",
       message: "SteamCMD executable path:",
-      default: defaults.steamcmd || "C:/steamcmd/steamcmd.exe",
+      default: defaults.steamcmd || getDefaultSteamCmdPath(),
     },
     {
       type: "input",

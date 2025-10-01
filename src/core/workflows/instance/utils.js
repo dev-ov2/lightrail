@@ -1,14 +1,8 @@
 import fs from "fs";
 import path from "path";
+import { getConfigDir, ensureDir } from "../../platform.js";
 
-const CONFIG_DIR = path.join(
-  process.env.USERPROFILE || process.env.HOME,
-  "Documents",
-  "lightrail"
-);
-if (!fs.existsSync(CONFIG_DIR)) {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-}
+const CONFIG_DIR = ensureDir(getConfigDir());
 const SERVERS_FILE = path.join(CONFIG_DIR, "servers.json");
 
 export function loadServers() {

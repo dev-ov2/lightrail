@@ -2,6 +2,7 @@ import inquirer from "inquirer";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
+import { getDefaultGameDir } from "../core/platform.js";
 
 async function promptForMinecraftConfig(defaults = {}) {
   const answers = await inquirer.prompt([
@@ -15,7 +16,7 @@ async function promptForMinecraftConfig(defaults = {}) {
       type: "input",
       name: "dir",
       message: "Server install directory:",
-      default: defaults.dir || "C:/lightrail/minecraft",
+      default: defaults.dir || getDefaultGameDir("minecraft"),
     },
     {
       type: "input",

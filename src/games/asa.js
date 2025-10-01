@@ -2,6 +2,7 @@ import { spawn, execSync } from "child_process";
 import path from "path";
 import fs from "fs";
 import inquirer from "inquirer";
+import { getDefaultGameDir, getDefaultSteamCmdPath } from "../core/platform.js";
 
 function getChildPids(parentPid) {
   if (process.platform !== "win32") return [];
@@ -175,7 +176,7 @@ async function promptForASAConfig(defaults = {}) {
       type: "input",
       name: "dir",
       message: "Server install directory:",
-      default: defaults.dir || "C:/lightrail/ark",
+      default: defaults.dir || getDefaultGameDir("ark"),
     },
     {
       type: "input",
@@ -193,7 +194,7 @@ async function promptForASAConfig(defaults = {}) {
       type: "input",
       name: "steamcmd",
       message: "SteamCMD executable path:",
-      default: defaults.steamcmd || "C:/steamcmd/steamcmd.exe",
+      default: defaults.steamcmd || getDefaultSteamCmdPath(),
     },
     {
       type: "input",
