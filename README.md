@@ -25,7 +25,7 @@ Lightrail is an **ESM (ECMAScript Modules)** Node.js CLI for launching and manag
 
 ## Single Executable Builds (Node SEA)
 
-We leverage the official Node.js SEA tooling (see: https://nodejs.org/api/single-executable-applications.html).
+We leverage the official Node.js SEA tooling (see: https://nodejs.org/api/single-executable-applications.html). Snapshot support is enabled, so the JavaScript source for the CLI is embedded directly inside the binary—no need to distribute the `src/` directory alongside the executable.
 
 Prerequisites:
 
@@ -39,7 +39,7 @@ pnpm install
 pnpm run sea:prepare
 ```
 
-2. Generate snapshot blob:
+2. Generate snapshot blob (embeds the CLI entry via `useSnapshot: true`):
 
 ```bash
 pnpm run sea:blob
@@ -63,19 +63,17 @@ Artifacts appear in `build/` (e.g. `Lightrail.exe`, `Lightrail-linux`).
 
 ### Runtime Paths & Defaults
 
-When running (source or SEA binary):
+Snapshot embedding means only runtime data (profiles, servers, logs, SteamCMD downloads, etc.) is written to user directories—source files are not required at runtime.
 
-- Platform detection: `LIGHTRAIL_PLATFORM=windows|linux` (optional) overrides OS autodetection. If unset, Windows is detected via `process.platform === 'win32'`, everything else treated as Linux‑like.
-- Config directory:
-  - Windows: `%USERPROFILE%/Documents/lightrail`
-  - Linux: `$XDG_CONFIG_HOME/lightrail` or `~/.config/lightrail`
-- Default game install directories:
-  - Windows: `C:/lightrail/<game>` (kept for continuity)
-  - Linux: `~/lightrail/<game>`
-- SteamCMD path default resolution:
-  - Windows: `C:/steamcmd/steamcmd.exe`
-  - Linux: First existing of `/usr/games/steamcmd`, `/usr/bin/steamcmd`, else falls back to `steamcmd` on PATH.
-- The base directory for relative resources (like `package.json` when in source mode) is the repo root. For SEA, dynamic assets should sit beside the executable.
+Platform behavior:
+
+| Aspect                  | Windows                             | Linux                                                       |
+| ----------------------- | ----------------------------------- | ----------------------------------------------------------- |
+| Config dir              | `%USERPROFILE%/Documents/lightrail` | `$XDG_CONFIG_HOME/lightrail` or `~/.config/lightrail`       |
+| Game installs (default) | `C:/lightrail/<game>`               | `~/lightrail/<game>`                                        |
+| SteamCMD detection      | `C:/steamcmd/steamcmd.exe`          | `/usr/games/steamcmd`, `/usr/bin/steamcmd`, else `steamcmd` |
+
+Override platform detection with: `LIGHTRAIL_PLATFORM=windows` or `LIGHTRAIL_PLATFORM=linux`.
 
 ### Linux Notes
 
@@ -164,12 +162,12 @@ Use the interactive menus to:
 
 ## Troubleshooting
 
-| Issue                    | Tip                                                                        |
-| ------------------------ | -------------------------------------------------------------------------- |
-| Binary can’t find config | Ensure write permissions or create `config/` beside executable (fallback). |
-| SteamCMD fails           | Run SteamCMD manually once, verify path and network.                       |
-| Colors missing           | Some minimal terminals may not support ANSI; try a different shell.        |
-| Wrong platform defaults  | Export `LIGHTRAIL_PLATFORM=linux` (or windows) to force detection.         |
+| Issue                    | Tip                                                                 |
+| ------------------------ | ------------------------------------------------------------------- |
+| Binary can’t find config | Ensure write permissions to your config directory.                  |
+| SteamCMD fails           | Run SteamCMD manually once, verify path and network.                |
+| Colors missing           | Some minimal terminals may not support ANSI; try a different shell. |
+| Wrong platform defaults  | Export `LIGHTRAIL_PLATFORM=linux` (or windows) to force detection.  |
 
 ## License
 

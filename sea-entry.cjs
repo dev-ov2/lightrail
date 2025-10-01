@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// CommonJS entry for Node SEA; dynamically loads ESM CLI without snapshot.
+// Deprecated fallback SEA entry (non-snapshot mode).
+// Snapshot builds now point directly at src/core/cli.js via sea-config.json (useSnapshot:true).
+// This file is retained only in case a non-snapshot build is needed for debugging.
 const path = require("path");
 const fs = require("fs");
 const { pathToFileURL } = require("url");

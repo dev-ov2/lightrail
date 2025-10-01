@@ -1,5 +1,5 @@
 {
-  "main": "sea-entry.cjs",
+  "main": "src/core/cli.js",
   "output": "sea-prep.blob",
-  "useSnapshot": false
+  "useSnapshot": true
 }
