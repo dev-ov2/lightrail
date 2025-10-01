@@ -2,6 +2,7 @@ const inquirer = require("inquirer");
 const { loadProfiles, saveProfiles } = require("./utils.js");
 const { withScreen } = require("../../utils.js");
 const { createProfile } = require("./create.js");
+const { getAppId } = require("../../../games/index.js");
 
 const selectProfile = async (game) => {
   let profiles = loadProfiles();
