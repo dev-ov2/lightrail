@@ -1,3 +1,13 @@
+const inquirer = require("inquirer");
+const { spawn, execSync } = require("child_process");
+const path = require("path");
+const fs = require("fs");
+const net = require("net");
+const {
+  getDefaultGameDir,
+  getDefaultSteamCmdPath,
+} = require("../core/platform.js");
+
 // Returns display name for Soulmask server instance
 function getSoulmaskInstanceDisplayName(instance, idx) {
   if (instance.serverName && instance.serverName.trim()) {
@@ -8,12 +18,6 @@ function getSoulmaskInstanceDisplayName(instance, idx) {
   }
   return `Instance ${idx + 1}`;
 }
-import inquirer from "inquirer";
-import { spawn, execSync } from "child_process";
-import path from "path";
-import fs from "fs";
-import net from "net";
-import { getDefaultGameDir, getDefaultSteamCmdPath } from "../core/platform.js";
 
 async function promptForSoulmaskConfig(defaults = {}) {
   const answers = await inquirer.prompt([
@@ -308,14 +312,7 @@ function killSoulmaskServer(profile) {
   });
 }
 
-export {
-  promptForSoulmaskConfig,
-  promptForSoulmaskServerInstance,
-  startSoulmaskServer,
-  killSoulmaskServer,
-  getSoulmaskInstanceDisplayName,
-};
-export default {
+module.exports = {
   promptForSoulmaskConfig,
   promptForSoulmaskServerInstance,
   startSoulmaskServer,

@@ -1,23 +1,16 @@
 #!/usr/bin/env node
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import chalk from "chalk";
-import { withScreen, getBaseDir } from "./utils.js";
-import { getConfigDir, ensureDir } from "./platform.js";
-import { selectGame } from "./workflows/game/select.js";
-import { selectProfile } from "./workflows/profile/select.js";
-import { selectInstance } from "./workflows/instance/select.js";
-import { start } from "./workflows/run.js";
+const fs = require("fs");
+const path = require("path");
+const chalk = require("chalk");
+const { withScreen } = require("./utils.js");
+const { withScreen, getBaseDir } = require("./utils.js");
+const { getConfigDir, ensureDir } = require("./platform.js");
+const { selectGame } = require("./workflows/game/select.js");
+const { selectProfile } = require("./workflows/profile/select.js");
+const { selectInstance } = require("./workflows/instance/select.js");
+const { start } = require("./workflows/run.js");
 
 const lightrail = chalk.rgb(96, 255, 255).bold("Lightrail");
-
-// Derive __dirname equivalent in ESM safely on Windows
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Determine config directory cross-platform
-const CONFIG_DIR = ensureDir(getConfigDir());
 
 async function main() {
   await withScreen("Landing", async () => {});

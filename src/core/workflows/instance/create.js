@@ -1,11 +1,16 @@
-import inquirer from "inquirer";
-import { withScreen } from "../../utils.js";
-import { promptForASAServerInstance } from "../../../games/asa.js";
-import { promptForSoulmaskServerInstance } from "../../../games/soulmask.js";
-import { promptForPalworldServerInstance } from "../../../games/palworld.js";
-import { saveServers } from "./utils.js";
+const inquirer = require("inquirer");
+const { withScreen } = require("../../utils.js");
 
-export const createInstance = async (
+const { promptForASAServerInstance } = require("../../../games/asa.js");
+const {
+  promptForSoulmaskServerInstance,
+} = require("../../../games/soulmask.js");
+const {
+  promptForPalworldServerInstance,
+} = require("../../../games/palworld.js");
+const { saveServers } = require("./utils.js");
+
+const createInstance = async (
   game,
   profileServers,
   serversData,
@@ -62,4 +67,4 @@ export const createInstance = async (
   }
 };
 
-export default { createInstance };
+module.exports = { createInstance };

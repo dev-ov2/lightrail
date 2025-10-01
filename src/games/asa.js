@@ -1,8 +1,11 @@
-import { spawn, execSync } from "child_process";
-import path from "path";
-import fs from "fs";
-import inquirer from "inquirer";
-import { getDefaultGameDir, getDefaultSteamCmdPath } from "../core/platform.js";
+const { spawn, execSync } = require("child_process");
+const path = require("path");
+const fs = require("fs");
+const inquirer = require("inquirer");
+const {
+  getDefaultGameDir,
+  getDefaultSteamCmdPath,
+} = require("../core/platform.js");
 
 function getChildPids(parentPid) {
   if (process.platform !== "win32") return [];
@@ -596,14 +599,7 @@ async function promptForASAServerInstance(defaults = {}) {
   answers.worldName = worldName;
   return answers;
 }
-export {
-  startASAServer,
-  killASAProcessTree,
-  killASAServer,
-  promptForASAConfig,
-  promptForASAServerInstance,
-};
-export default {
+module.exports = {
   startASAServer,
   killASAProcessTree,
   killASAServer,

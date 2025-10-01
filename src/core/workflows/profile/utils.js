@@ -1,11 +1,11 @@
-import fs from "fs";
-import path from "path";
-import { getConfigDir, ensureDir } from "../../platform.js";
+const fs = require("fs");
+const path = require("path");
+const { getConfigDir, ensureDir } = require("../../platform.js");
 
 const CONFIG_DIR = ensureDir(getConfigDir());
 const CONFIG_FILE = path.join(CONFIG_DIR, "server-profiles.json");
 
-export function loadProfiles() {
+function loadProfiles() {
   if (!fs.existsSync(CONFIG_FILE)) return [];
   try {
     return JSON.parse(fs.readFileSync(CONFIG_FILE, "utf8"));
@@ -14,7 +14,7 @@ export function loadProfiles() {
   }
 }
 
-export function saveProfiles(profiles) {
+function saveProfiles(profiles) {
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(profiles, null, 2));
 }
-export default { loadProfiles, saveProfiles };
+module.exports = { loadProfiles, saveProfiles };

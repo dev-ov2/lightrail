@@ -1,11 +1,13 @@
-import chalk from "chalk";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+const chalk = require("chalk");
+const pkg = require("../../package.json");
+const fs = require("fs");
+const path = require("path");
+const { fileURLToPath } = require("url");
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // Resolve base directory (supports Node SEA single executable: process.execPath)
-export function getBaseDir() {
+function getBaseDir() {
   return path.join(__dirname, "../..");
 }
 let pkg = { version: "?" };
@@ -22,7 +24,7 @@ const GAMES = ["Ark: Survival Ascended", "Soulmask", "Palworld"].sort();
 
 const lightrail = chalk.rgb(96, 255, 255).bold("Lightrail");
 
-export function showLandingScreen() {
+function showLandingScreen() {
   // Gradient from rgb(96,255,255) to rgb(255,128,255)
   const gradientStart = [96, 255, 255];
   const gradientEnd = [255, 128, 255];
@@ -80,7 +82,7 @@ export function showLandingScreen() {
   );
 }
 
-export function setConsoleTitle(state, profile = null, serverName = null) {
+function setConsoleTitle(state, profile = null, serverName = null) {
   let title = state;
   if (profile && serverName) {
     title = `${profile} · ${serverName}`;
@@ -94,16 +96,23 @@ export function setConsoleTitle(state, profile = null, serverName = null) {
   }
 }
 
-export function clearScreen() {
+function clearScreen() {
   process.stdout.write("\x1Bc");
   // console.clear();
   showLandingScreen();
 }
 
-export function withScreen(title, fn) {
+function withScreen(title, fn) {
   setConsoleTitle(title);
   clearScreen();
   return fn();
 }
 
-export { GAMES };
+module.exports = {
+  GAMES,
+  showLandingScreen,
+  setConsoleTitle,
+  clearScreen,
+  withScreen,
+  getBaseDir,
+};

@@ -1,7 +1,10 @@
-import inquirer from "inquirer";
-import { spawn } from "child_process";
-import path from "path";
-import { getDefaultGameDir, getDefaultSteamCmdPath } from "../core/platform.js";
+const inquirer = require("inquirer");
+const { spawn } = require("child_process");
+const path = require("path");
+const {
+  getDefaultGameDir,
+  getDefaultSteamCmdPath,
+} = require("../core/platform.js");
 
 async function promptForPalworldConfig(defaults = {}) {
   const answers = await inquirer.prompt([
@@ -285,13 +288,7 @@ function killPalworldServer(serverInstance) {
     console.log("No active Palworld server process found.");
   }
 }
-export {
-  promptForPalworldConfig,
-  promptForPalworldServerInstance,
-  startPalworldServer,
-  killPalworldServer,
-};
-export default {
+module.exports = {
   promptForPalworldConfig,
   promptForPalworldServerInstance,
   startPalworldServer,

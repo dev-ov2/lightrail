@@ -1,8 +1,8 @@
-import { setInterval } from "timers";
-import { startServer, killServer } from "./serverManager.js";
-import { execSync } from "child_process";
+const { setInterval } = require("timers");
+const { startServer, killServer } = require("./serverManager.js");
+const { execSync } = require("child_process");
 
-export function scheduleRestart(
+function scheduleRestart(
   profile,
   serverInstance,
   restartTime,
@@ -50,4 +50,4 @@ export function scheduleRestart(
     setInterval(restartFlow, 24 * 60 * 60 * 1000); // Repeat every 24h
   }, getNextRestartMs());
 }
-export default { scheduleRestart };
+module.exports = { scheduleRestart };
