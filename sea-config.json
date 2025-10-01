@@ -1,5 +1,6 @@
 {
   "main": "src/core/cli.js",
   "output": "sea-prep.blob",
-  "useSnapshot": true
+  "useSnapshot": true,
+  "assets": ["package.json"]
 }
