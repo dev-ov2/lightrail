@@ -13,21 +13,25 @@ const {
   promptForPalworldServerInstance,
   promptForPalworldConfig,
 } = require("../games/palworld.js");
-
-const ARK = "Ark: Survival Ascended";
-const SOULMASK = "Soulmask";
-const PALWORLD = "Palworld";
+const {
+  ARK,
+  ARK_APPID,
+  SOULMASK,
+  SOULMASK_APPID,
+  PALWORLD,
+  PALWORLD_APPID,
+} = require("../constants.js");
 
 const GAMES = [ARK, SOULMASK, PALWORLD].sort();
 
 const getAppId = (game) => {
   switch (game) {
     case ARK:
-      return "2430930";
+      return ARK_APPID;
     case SOULMASK:
-      return "3017310";
+      return SOULMASK_APPID;
     case PALWORLD:
-      return "2394010";
+      return PALWORLD_APPID;
     default:
       return null;
   }

@@ -7,6 +7,7 @@ const {
   getDefaultGameDir,
   getDefaultSteamCmdPath,
 } = require("../core/platform.js");
+const { SOULMASK_APPID } = require("../constants.js");
 
 // Returns display name for Soulmask server instance
 function getSoulmaskInstanceDisplayName(instance, idx) {
@@ -58,7 +59,7 @@ async function promptForSoulmaskConfig(defaults = {}) {
       default: defaults.savingInterval || 600,
     },
   ]);
-  answers.appid = "3017310";
+  answers.appid = SOULMASK_APPID;
   return answers;
 }
 

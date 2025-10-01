@@ -6,6 +6,7 @@ const {
   getDefaultGameDir,
   getDefaultSteamCmdPath,
 } = require("../core/platform.js");
+const { ARK_APPID } = require("../constants.js");
 
 function getChildPids(parentPid) {
   if (process.platform !== "win32") return [];
@@ -225,7 +226,7 @@ async function promptForASAConfig(defaults = {}) {
     },
   ]);
   if (!answers) return null;
-  answers.appid = "2430930";
+  answers.appid = ARK_APPID;
   return answers;
 }
 

@@ -70,7 +70,7 @@ async function promptForPalworldConfig(defaults = {}) {
       default: defaults.savingInterval || "",
     },
   ]);
-  answers.appid = "2394010";
+  answers.appid = PALWORLD_APPID;
   return answers;
 }
 
